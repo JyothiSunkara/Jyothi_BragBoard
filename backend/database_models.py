@@ -40,3 +40,15 @@ class ShoutOut(Base):
     # Relationships
     giver = relationship("User", foreign_keys=[giver_id], back_populates="given_shoutouts")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_shoutouts")
+    tags = relationship("ShoutOutTag", back_populates="shoutout", cascade="all, delete")
+
+class ShoutOutTag(Base):
+    __tablename__ = "shoutout_tags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shoutout_id = Column(Integer, ForeignKey("shoutouts.id"), nullable=False)
+    tagged_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # Relationships
+    shoutout = relationship("ShoutOut", back_populates="tags")
+    tagged_user = relationship("User")

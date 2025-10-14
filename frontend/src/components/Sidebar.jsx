@@ -125,4 +125,4 @@ const Sidebar = ({ activeView, setActiveView, selectedDepartment, setSelectedDep
     )
   }
   
-  export default Sidebar
+  export default Sidebar;

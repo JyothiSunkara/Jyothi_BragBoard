@@ -1,7 +1,6 @@
 
 from fastapi import FastAPI, Depends
 from database import engine, get_db
-import database_models
 from routers import users, shoutouts
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Header from './Header'
 import Sidebar from './Sidebar'
 import MainContent from './MainContent'
+import Shoutouts from "./Shoutouts";
 
 const Dashboard = ({ user, onLogout }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all')
@@ -33,4 +34,4 @@ const Dashboard = ({ user, onLogout }) => {
   )
 }
 
-export default Dashboard
+export default Dashboard;
