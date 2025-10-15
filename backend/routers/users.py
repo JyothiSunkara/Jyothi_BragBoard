@@ -22,7 +22,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     
     # Create user
     new_user = User(
-        username=user.name,
+        username=user.username,
         email=user.email,
         hashed_password=hashed_password,
         department=user.department,

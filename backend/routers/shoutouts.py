@@ -2,13 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from typing import List, Optional
+from datetime import datetime, timedelta
+
 from database import get_db
 from database_models import ShoutOut, User, ShoutOutTag
 from auth import get_current_user
 from schemas import UserOut, ShoutOutCreate, ShoutOutResponse, DepartmentStats
-from utils import utc_to_ist  
 
 router = APIRouter(prefix="/shoutouts", tags=["shoutouts"])
+
+# -------------------- HELPER: Convert UTC to IST --------------------
+def utc_to_ist(utc_dt: datetime) -> str:
+    ist_dt = utc_dt + timedelta(hours=5, minutes=30)
+    return ist_dt.strftime("%Y-%m-%d %H:%M:%S.%f")
 
 # -------------------- CREATE SHOUTOUT --------------------
 @router.post("/create", response_model=ShoutOutResponse)
@@ -21,6 +27,7 @@ def create_shoutout(
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
 
+    # Store UTC timestamp in DB
     new_shoutout = ShoutOut(
         title=shoutout.title,
         message=shoutout.message,
@@ -29,12 +36,14 @@ def create_shoutout(
         giver_department=current_user.department,
         receiver_department=receiver.department,
         category=shoutout.category,
-        is_public=shoutout.is_public
+        is_public=shoutout.is_public,
+        created_at=datetime.utcnow()
     )
     db.add(new_shoutout)
     db.commit()
     db.refresh(new_shoutout)
 
+    # Handle tagged users
     tagged_users_objs = []
     for uid in shoutout.tagged_user_ids or []:
         tagged_user = db.query(User).filter(User.id == uid).first()
@@ -55,7 +64,7 @@ def create_shoutout(
         tagged_users=[UserOut.from_attributes(user) for user in tagged_users_objs],
         category=new_shoutout.category,
         is_public=new_shoutout.is_public,
-        created_at=utc_to_ist(new_shoutout.created_at)
+        created_at=new_shoutout.created_at
     )
 
 # -------------------- FEED --------------------
@@ -116,7 +125,7 @@ def get_shoutouts_feed(
             tagged_users=tagged_users,
             category=shoutout.category,
             is_public=shoutout.is_public,
-            created_at=utc_to_ist(shoutout.created_at)
+            created_at=shoutout.created_at
         ))
 
     return result
@@ -163,7 +172,7 @@ def get_my_shoutouts(
             tagged_users=tagged_users,
             category=shoutout.category,
             is_public=shoutout.is_public,
-            created_at=utc_to_ist(shoutout.created_at)
+            created_at=shoutout.created_at
         ))
 
     return result

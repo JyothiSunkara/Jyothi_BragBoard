@@ -86,12 +86,14 @@ class ApiService {
   }
 
   // -------------------- SHOUTOUTS --------------------
-  async getShoutouts(department = 'all') {
+
+  async getShoutouts(department = 'all', skip = 0, limit = 10) {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_BASE_URL}/shoutouts/feed?department=${department}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/shoutouts/feed?department=${department}&skip=${skip}&limit=${limit}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -105,16 +107,20 @@ class ApiService {
     }
   }
 
-  async createShoutout(shoutoutData) {
+  async createShoutout({ title, message, receiver_id, tagged_user_ids = [], category, is_public }) {
     try {
       const token = localStorage.getItem('access_token');
+      const payload = { title, message, receiver_id, tagged_user_ids, category, is_public };
+
+      console.log('Creating shoutout with data:', payload);
+
       const response = await fetch(`${API_BASE_URL}/shoutouts/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(shoutoutData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -122,17 +128,19 @@ class ApiService {
         throw new Error(errorData.detail || 'Failed to create shoutout');
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('Shoutout created successfully:', result);
+      return result;
     } catch (error) {
       console.error('Create shoutout error:', error);
       throw new Error(error.message || 'Network error during shoutout creation');
     }
   }
 
-  async getMyShoutouts() {
+  async getMyShoutouts(type = 'all') {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_BASE_URL}/shoutouts/mine`, {
+      const response = await fetch(`${API_BASE_URL}/shoutouts/my-shoutouts?type=${type}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -147,6 +155,43 @@ class ApiService {
       throw new Error(error.message || 'Network error during fetching my shoutouts');
     }
   }
+
+  async searchUsers(department = 'all', search = '') {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${API_BASE_URL}/shoutouts/users/search?department=${department}&search=${search}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to search users');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Search users error:', error);
+      throw new Error(error.message || 'Network error during user search');
+    }
+  }
+  
+  async getAllUsers() {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_BASE_URL}/users/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return await response.json();
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+  
 }
 
 export default new ApiService();
