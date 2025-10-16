@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
+import shutil, uuid, os
 
 from database import get_db
 from database_models import ShoutOut, User, ShoutOutTag
@@ -11,15 +12,32 @@ from schemas import UserOut, ShoutOutCreate, ShoutOutResponse, DepartmentStats
 
 router = APIRouter(prefix="/shoutouts", tags=["shoutouts"])
 
-# -------------------- HELPER: Convert UTC to IST --------------------
-def utc_to_ist(utc_dt: datetime) -> str:
-    ist_dt = utc_dt + timedelta(hours=5, minutes=30)
-    return ist_dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+# Ensure uploads folder exists
+UPLOAD_FOLDER = "uploads"
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+
+# -------------------- UPLOAD IMAGE --------------------
+@router.post("/upload-image")
+async def upload_image(image: UploadFile = File(...)):
+    try:
+        ext = image.filename.split(".")[-1]
+        filename = f"{uuid.uuid4()}.{ext}"
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+
+        return {"image_url": f"/{UPLOAD_FOLDER}/{filename}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # -------------------- CREATE SHOUTOUT --------------------
 @router.post("/create", response_model=ShoutOutResponse)
 def create_shoutout(
-    shoutout: ShoutOutCreate, 
+    shoutout: ShoutOutCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -27,7 +45,6 @@ def create_shoutout(
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
 
-    # Store UTC timestamp in DB
     new_shoutout = ShoutOut(
         title=shoutout.title,
         message=shoutout.message,
@@ -37,6 +54,7 @@ def create_shoutout(
         receiver_department=receiver.department,
         category=shoutout.category,
         is_public=shoutout.is_public,
+        image_url=shoutout.image_url,
         created_at=datetime.utcnow()
     )
     db.add(new_shoutout)
@@ -59,18 +77,22 @@ def create_shoutout(
         message=new_shoutout.message,
         giver_name=current_user.username,
         receiver_name=receiver.username,
-        giver_department=new_shoutout.giver_department,
-        receiver_department=new_shoutout.receiver_department,
-        tagged_users=[UserOut.from_attributes(user) for user in tagged_users_objs],
+        giver_department=current_user.department,
+        giver_role=current_user.role,
+        receiver_department=receiver.department,
+        receiver_role=receiver.role,
+        tagged_users=[UserOut.model_validate(u) for u in tagged_users_objs],
         category=new_shoutout.category,
         is_public=new_shoutout.is_public,
-        created_at=new_shoutout.created_at
+        created_at=new_shoutout.created_at,
+        image_url=new_shoutout.image_url
     )
+
 
 # -------------------- FEED --------------------
 @router.get("/feed", response_model=List[ShoutOutResponse])
 def get_shoutouts_feed(
-    department: Optional[str] = Query(None, description="Filter by department. Use 'all' for all departments"),
+    department: Optional[str] = Query("all"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, le=100),
     db: Session = Depends(get_db),
@@ -78,7 +100,8 @@ def get_shoutouts_feed(
 ):
     query = db.query(ShoutOut)
 
-    if department and department != "all":
+    # Filter by department / public visibility
+    if department != "all":
         query = query.filter(
             or_(
                 ShoutOut.giver_department == department,
@@ -109,102 +132,50 @@ def get_shoutouts_feed(
     shoutouts = query.order_by(ShoutOut.created_at.desc()).offset(skip).limit(limit).all()
     result = []
 
-    for shoutout in shoutouts:
-        giver = shoutout.giver
-        receiver = shoutout.receiver
-        tagged_users = [UserOut.from_attributes(tag.tagged_user) for tag in shoutout.tags]
+    for s in shoutouts:
+        tagged_users = [UserOut.model_validate(tag.tagged_user) for tag in s.tags]
 
         result.append(ShoutOutResponse(
-            id=shoutout.id,
-            title=shoutout.title,
-            message=shoutout.message,
-            giver_name=giver.username,
-            receiver_name=receiver.username,
-            giver_department=shoutout.giver_department,
-            receiver_department=shoutout.receiver_department,
+            id=s.id,
+            title=s.title,
+            message=s.message,
+            giver_name=s.giver.username if s.giver else "N/A",
+            receiver_name=s.receiver.username if s.receiver else "N/A",
+            giver_department=s.giver.department if s.giver else "N/A",
+            giver_role=s.giver.role if s.giver else "N/A",
+            receiver_department=s.receiver.department if s.receiver else "N/A",
+            receiver_role=s.receiver.role if s.receiver else "N/A",
             tagged_users=tagged_users,
-            category=shoutout.category,
-            is_public=shoutout.is_public,
-            created_at=shoutout.created_at
+            category=s.category,
+            is_public=s.is_public,
+            created_at=s.created_at,
+            image_url=s.image_url
         ))
 
     return result
 
-# -------------------- MY SHOUTOUTS --------------------
-@router.get("/my-shoutouts", response_model=List[ShoutOutResponse])
-def get_my_shoutouts(
-    type: str = Query("all", description="'given', 'received', or 'all'"),
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, le=100),
+
+# -------------------- DASHBOARD STATS FOR CURRENT USER --------------------
+@router.get("/dashboard/stats")
+def get_dashboard_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = db.query(ShoutOut)
+    # Total users in the same department
+    total_users = db.query(User).filter(User.department == current_user.department).count()
 
-    if type == "given":
-        query = query.filter(ShoutOut.giver_id == current_user.id)
-    elif type == "received":
-        query = query.filter(ShoutOut.receiver_id == current_user.id)
-    else:
-        query = query.filter(
-            or_(
-                ShoutOut.giver_id == current_user.id,
-                ShoutOut.receiver_id == current_user.id
-            )
-        )
+    # Shoutouts sent by this user
+    shoutouts_sent = db.query(ShoutOut).filter(ShoutOut.giver_id == current_user.id).count()
 
-    shoutouts = query.order_by(ShoutOut.created_at.desc()).offset(skip).limit(limit).all()
-    result = []
+    # Shoutouts received by this user
+    shoutouts_received = db.query(ShoutOut).filter(ShoutOut.receiver_id == current_user.id).count()
 
-    for shoutout in shoutouts:
-        giver = shoutout.giver
-        receiver = shoutout.receiver
-        tagged_users = [UserOut.from_attributes(tag.tagged_user) for tag in shoutout.tags]
+    return {
+        "totalUsers": total_users,
+        "shoutoutsSent": shoutouts_sent,
+        "shoutoutsReceived": shoutouts_received
+    }
 
-        result.append(ShoutOutResponse(
-            id=shoutout.id,
-            title=shoutout.title,
-            message=shoutout.message,
-            giver_name=giver.username,
-            receiver_name=receiver.username,
-            giver_department=shoutout.giver_department,
-            receiver_department=shoutout.receiver_department,
-            tagged_users=tagged_users,
-            category=shoutout.category,
-            is_public=shoutout.is_public,
-            created_at=shoutout.created_at
-        ))
-
-    return result
-
-# -------------------- DEPARTMENT STATS --------------------
-@router.get("/departments/stats", response_model=List[DepartmentStats])
-def get_department_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    departments = db.query(User.department).distinct().all()
-    department_list = [dept[0] for dept in departments]
-    stats = []
-
-    for dept in department_list:
-        total = db.query(ShoutOut).filter(
-            or_(
-                ShoutOut.giver_department == dept,
-                ShoutOut.receiver_department == dept
-            )
-        ).count()
-        given = db.query(ShoutOut).filter(ShoutOut.giver_department == dept).count()
-        received = db.query(ShoutOut).filter(ShoutOut.receiver_department == dept).count()
-
-        stats.append(DepartmentStats(
-            department=dept,
-            total_shoutouts=total,
-            shoutouts_given=given,
-            shoutouts_received=received
-        ))
-
-    return sorted(stats, key=lambda x: x.total_shoutouts, reverse=True)
 
 # -------------------- SEARCH USERS --------------------
 @router.get("/users/search", response_model=List[UserOut])
@@ -221,4 +192,4 @@ def search_users_by_department(
         query = query.filter(User.username.ilike(f"%{search}%"))
     users = query.limit(20).all()
 
-    return [UserOut.from_attributes(user) for user in users]
+    return [UserOut.model_validate(user) for user in users]

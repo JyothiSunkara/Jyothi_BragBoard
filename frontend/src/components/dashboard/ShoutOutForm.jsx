@@ -1,195 +1,257 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ApiService from "../../services/api";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc";
+import { ImageIcon } from "lucide-react";
 
-dayjs.extend(utc);
-dayjs.extend(relativeTime);
+const ShoutOutForm = ({ currentUser }) => {
+  const [message, setMessage] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [receiver, setReceiver] = useState(null);
+  const [taggedUsers, setTaggedUsers] = useState([]);
+  const [showReceiverDropdown, setShowReceiverDropdown] = useState(false);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const [category, setCategory] = useState("");
+  const [visibility, setVisibility] = useState("public");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
-const ShoutoutFeed = ({ currentUser }) => {
-  const [shoutouts, setShoutouts] = useState([]);
-  const [commentInput, setCommentInput] = useState({});
+  const receiverRef = useRef();
+  const tagRef = useRef();
 
+  // -------------------- FETCH USERS --------------------
   useEffect(() => {
-    const fetchShoutouts = async () => {
+    const fetchUsers = async () => {
       try {
-        const res = await ApiService.getShoutouts(); // Fetch all shoutouts
-        setShoutouts(res);
+        const users = await ApiService.getAllUsers();
+        setAllUsers(users);
       } catch (err) {
-        console.error("Failed to fetch shoutouts", err);
+        console.error(err);
       }
     };
+    fetchUsers();
 
-    fetchShoutouts();
+    const handleClickOutside = (e) => {
+      if (receiverRef.current && !receiverRef.current.contains(e.target)) {
+        setShowReceiverDropdown(false);
+      }
+      if (tagRef.current && !tagRef.current.contains(e.target)) {
+        setShowTagDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLike = (shoutId) => {
-    setShoutouts((prev) =>
-      prev.map((s) =>
-        s.id === shoutId
-          ? {
-              ...s,
-              likedByCurrentUser: !s.likedByCurrentUser,
-              likes: s.likedByCurrentUser ? s.likes - 1 : s.likes + 1,
-            }
-          : s
-      )
-    );
+  // -------------------- TAG USER --------------------
+  const toggleTagUser = (user) => {
+    if (taggedUsers.some((u) => u.id === user.id)) {
+      setTaggedUsers(taggedUsers.filter((u) => u.id !== user.id));
+    } else {
+      setTaggedUsers([...taggedUsers, user]);
+    }
   };
 
-  const handleClap = (shoutId) => {
-    setShoutouts((prev) =>
-      prev.map((s) =>
-        s.id === shoutId
-          ? {
-              ...s,
-              clappedByCurrentUser: !s.clappedByCurrentUser,
-              claps: s.clappedByCurrentUser ? s.claps - 1 : s.claps + 1,
-            }
-          : s
-      )
-    );
+  // -------------------- HANDLE IMAGE UPLOAD --------------------
+  const handleImageUpload = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
-  const handleAddComment = (shoutId) => {
-    const text = commentInput[shoutId];
-    if (!text) return;
-
-    const newComment = {
-      id: Date.now(),
-      userId: currentUser.id,
-      username: currentUser.username,
-      role: currentUser.role,
-      text,
-      created_at: new Date().toISOString(),
-    };
-
-    setShoutouts((prev) =>
-      prev.map((s) =>
-        s.id === shoutId
-          ? { ...s, comments: [...s.comments, newComment] }
-          : s
-      )
-    );
-
-    setCommentInput((prev) => ({ ...prev, [shoutId]: "" }));
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
   };
 
-  const handleDeleteComment = (shoutId, commentId) => {
-    setShoutouts((prev) =>
-      prev.map((s) =>
-        s.id === shoutId
-          ? {
-              ...s,
-              comments: s.comments.filter((c) => c.id !== commentId),
-            }
-          : s
-      )
-    );
+  // -------------------- SUBMIT SHOUTOUT --------------------
+  const handleSubmit = async () => {
+    if (!message.trim() || !receiver || !category) {
+      alert("Please fill in message, receiver, and category!");
+      return;
+    }
+
+    try {
+      await ApiService.createShoutout({
+        title: "", // optional
+        message,
+        receiver_id: receiver.id,
+        tagged_user_ids: taggedUsers.map((u) => u.id),
+        category,
+        is_public: visibility,
+        imageFile, // optional
+      });
+
+      // Reset form
+      setMessage("");
+      setReceiver(null);
+      setTaggedUsers([]);
+      setCategory("");
+      setVisibility("public");
+      removeImage();
+
+      setSuccessMessage("🎉 Shout-Out sent successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Failed to post shoutout:", err);
+      alert("Failed to post shoutout: " + err.message);
+    }
   };
 
   return (
-    <div className="flex flex-col space-y-6">
-      {shoutouts.map((shout) => (
-        <div key={shout.id} className="bg-white p-6 rounded-lg shadow">
-          {/* Header: User Info */}
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {shout.giver_name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div>
-              <p className="font-semibold">
-                {shout.giver_name}{" "}
-                <span className="text-sm text-gray-500">
-                  ({shout.giver_role || "Employee"})
-                </span>
-              </p>
-              <p className="text-gray-400 text-sm">{shout.giver_department}</p>
-            </div>
-            <p className="ml-auto text-gray-400 text-sm">
-              {dayjs.utc(shout.created_at).local().fromNow()}
-            </p>
-          </div>
+    <div className="flex-1 p-6 min-h-screen bg-gray-50">
+      <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 text-transparent bg-clip-text">
+        Create Shout-Out
+      </h2>
 
-          {/* Message */}
-          <p className="text-gray-700 mb-4">{shout.message}</p>
-
-          {/* Recipients */}
-          {shout.recipients?.length > 0 && (
-            <p className="text-sm text-gray-500 mb-3">
-              To: {shout.recipients.map((r) => `${r.name} (${r.department})`).join(", ")}
-            </p>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center space-x-4 mb-4">
-            <button
-              className={`px-3 py-1 rounded-lg ${
-                shout.likedByCurrentUser ? "bg-blue-500 text-white" : "bg-gray-100"
-              }`}
-              onClick={() => handleLike(shout.id)}
-            >
-              👍 {shout.likes || 0}
-            </button>
-            <button
-              className={`px-3 py-1 rounded-lg ${
-                shout.clappedByCurrentUser ? "bg-yellow-400 text-white" : "bg-gray-100"
-              }`}
-              onClick={() => handleClap(shout.id)}
-            >
-              👏 {shout.claps || 0}
-            </button>
-          </div>
-
-          {/* Comments */}
-          <div className="space-y-2">
-            {shout.comments?.map((c) => (
-              <div key={c.id} className="flex items-start space-x-2">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-white font-bold">
-                  {c.username?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div className="flex flex-col flex-1">
-                  <p className="text-sm">
-                    <span className="font-semibold">{c.username}</span>{" "}
-                    <span className="text-gray-500 text-xs">({c.role})</span>
-                  </p>
-                  <p className="text-gray-600 text-sm">{c.text}</p>
-                </div>
-                {c.userId === currentUser.id && (
-                  <button
-                    className="text-red-500 text-sm"
-                    onClick={() => handleDeleteComment(shout.id, c.id)}
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            ))}
-
-            {/* Add Comment */}
-            <div className="flex space-x-2 mt-2">
-              <input
-                type="text"
-                className="flex-1 p-2 border border-gray-300 rounded-lg"
-                placeholder="Add a comment..."
-                value={commentInput[shout.id] || ""}
-                onChange={(e) =>
-                  setCommentInput((prev) => ({ ...prev, [shout.id]: e.target.value }))
-                }
-              />
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                onClick={() => handleAddComment(shout.id)}
-              >
-                Post
-              </button>
-            </div>
-          </div>
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 text-green-800 border border-green-300 rounded-lg">
+          {successMessage}
         </div>
-      ))}
+      )}
+
+      {/* Message */}
+      <textarea
+        className="w-full h-36 p-4 border rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-400 mb-4 resize-none bg-white shadow-sm"
+        placeholder="Write your shoutout..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+
+      {/* Receiver */}
+      <div className="relative mb-4" ref={receiverRef}>
+        <button
+          className="w-full text-left p-3 border rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm"
+          onClick={() => setShowReceiverDropdown(!showReceiverDropdown)}
+        >
+          {receiver ? receiver.username : "Select Receiver"}
+        </button>
+        {showReceiverDropdown && (
+          <div className="absolute w-full max-h-60 overflow-y-auto border bg-white z-50 mt-1 rounded-lg shadow-lg">
+            {allUsers
+              .filter((u) => u.id !== currentUser.id)
+              .map((u) => (
+                <div
+                  key={u.id}
+                  className="p-2 cursor-pointer hover:bg-violet-100 transition-colors"
+                  onClick={() => {
+                    setReceiver(u);
+                    setShowReceiverDropdown(false);
+                  }}
+                >
+                  {u.username} | {u.department} | {u.role}
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
+      {/* Tag People */}
+      <div className="relative mb-4" ref={tagRef}>
+        <button
+          className="w-full text-left p-3 border rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm"
+          onClick={() => setShowTagDropdown(!showTagDropdown)}
+        >
+          {taggedUsers.length > 0
+            ? `Tagged: ${taggedUsers.map((u) => u.username).join(", ")}`
+            : "Tag People"}
+        </button>
+        {showTagDropdown && (
+          <div className="absolute w-full max-h-60 overflow-y-auto border bg-white z-50 mt-1 rounded-lg shadow-lg">
+            {allUsers
+              .filter((u) => u.id !== currentUser.id)
+              .map((u) => (
+                <div
+                  key={u.id}
+                  className={`p-2 cursor-pointer hover:bg-violet-100 transition-colors ${
+                    taggedUsers.some((t) => t.id === u.id) ? "bg-violet-200" : ""
+                  }`}
+                  onClick={() => toggleTagUser(u)}
+                >
+                  {u.username} | {u.department} | {u.role}
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
+      {/* Image Upload */}
+      <div className="mb-4">
+        <label className="cursor-pointer inline-flex items-center gap-2 p-3 border rounded-lg hover:border-violet-500 bg-white shadow-sm">
+          <ImageIcon size={20} />
+          <span>Upload Image</span>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+        </label>
+
+        {/* Uploaded image name + delete button */}
+        {imageFile && (
+          <div className="mt-2 flex items-center gap-2 bg-gray-100 p-2 rounded-lg w-max">
+            <span className="text-sm">{imageFile.name}</span>
+            <button
+              type="button"
+              className="text-red-500 font-bold hover:text-red-700"
+              onClick={removeImage}
+            >
+              ❌
+            </button>
+          </div>
+        )}
+
+        {/* Image preview */}
+        {imagePreview && (
+          <img
+            src={imagePreview}
+            alt="Preview"
+            className="mt-2 w-40 rounded-lg border"
+          />
+        )}
+      </div>
+
+      {/* Category */}
+      <div className="mb-4">
+        <select
+          className="w-full p-3 border rounded-lg focus:outline-none hover:border-violet-500 bg-white shadow-sm"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="" disabled>Select Category</option>
+          <option value="teamwork">Teamwork</option>
+          <option value="innovation">Innovation</option>
+          <option value="leadership">Leadership</option>
+          <option value="customer_service">Customer Service</option>
+          <option value="problem_solving">Problem Solving</option>
+          <option value="mentorship">Mentorship</option>
+        </select>
+      </div>
+
+      {/* Visibility */}
+      <div className="mb-6">
+        <select
+          className="w-full p-3 border rounded-lg focus:outline-none hover:border-violet-500 bg-white shadow-sm"
+          value={visibility}
+          onChange={(e) => setVisibility(e.target.value)}
+        >
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
+
+      {/* Post Button */}
+      <button
+        className="w-full bg-violet-500 hover:bg-violet-600 text-white font-semibold py-3 rounded-lg transition-colors shadow-sm"
+        onClick={handleSubmit}
+      >
+        Post Shout-Out
+      </button>
     </div>
   );
 };
 
-export default ShoutoutFeed;
+export default ShoutOutForm;

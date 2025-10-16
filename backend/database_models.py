@@ -36,11 +36,11 @@ class ShoutOut(Base):
     category = Column(Enum("teamwork", "innovation", "leadership", "customer_service", "problem_solving", "mentorship", name="shoutout_category"), nullable=False)
     is_public = Column(Enum("public", "department_only", "private", name="visibility_level"), default="public")
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+    image_url = Column(String, nullable=True)   
     # Relationships
     giver = relationship("User", foreign_keys=[giver_id], back_populates="given_shoutouts")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_shoutouts")
-    tags = relationship("ShoutOutTag", back_populates="shoutout", cascade="all, delete")
+    tags = relationship("ShoutOutTag", back_populates="shoutout", cascade="all, delete", lazy="joined")
 
 class ShoutOutTag(Base):
     __tablename__ = "shoutout_tags"

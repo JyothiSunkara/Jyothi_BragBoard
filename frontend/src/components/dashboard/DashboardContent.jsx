@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ApiService from "../../services/api";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import CountUp from "react-countup";
-
-dayjs.extend(utc);
 
 const DashboardContent = ({ currentUser }) => {
   const [stats, setStats] = useState({
@@ -19,7 +15,7 @@ const DashboardContent = ({ currentUser }) => {
 
     const fetchStats = async () => {
       try {
-        const res = await ApiService.getStats(currentUser.id);
+        const res = await ApiService.getDashboardStats();
         setStats(res);
       } catch (err) {
         console.error("Failed to fetch stats", err);
@@ -39,22 +35,20 @@ const DashboardContent = ({ currentUser }) => {
   ];
 
   return (
-    <div className="flex flex-col min-h-full space-y-6 p-4 bg-gray-50">
+    <div className="flex flex-col min-h-full space-y-6 p-6 bg-gray-50">
       {/* Welcome */}
-      <h1 className="text-3xl font-bold mb-4">
-        Welcome back, {currentUser.username}!
-        <span className="ml-2 px-2 py-1 text-sm bg-gray-200 rounded">
-          {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
-        </span>
+      <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+         Welcome back, {currentUser.username}!
       </h1>
 
-      {/* User Info Stack */}
-      <div className="bg-white p-6 rounded-lg shadow mb-4 hover:shadow-xl transition-shadow duration-500">
-        <div className="flex items-center space-x-2 mb-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+
+      {/* User Info */}
+      <div className="bg-white p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-500 space-y-2">
+        <div className="flex items-center space-x-4">
+          <div className="w-8 h-8 bg-gradient-to-r from-indigo-300 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-xl">
             {currentUser.username?.charAt(0).toUpperCase() || "U"}
           </div>
-          <h2 className="text-2xl font-semibold">{currentUser.username}</h2>
+          <p className="text-lg font-semibold">{currentUser.username}</p>
         </div>
         <p className="text-gray-600"><span className="font-semibold">Email:</span> {currentUser.email}</p>
         <p className="text-gray-600"><span className="font-semibold">Department:</span> {currentUser.department}</p>
@@ -62,22 +56,22 @@ const DashboardContent = ({ currentUser }) => {
         <p className="text-gray-600"><span className="font-semibold">Member Since:</span> {new Date(currentUser.joined_at).toLocaleDateString()}</p>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {statCards.map((card, idx) => (
           <div
             key={idx}
-            className={`flex items-center justify-between ${card.color} p-4 rounded-lg shadow transition-all duration-500 transform hover:scale-105 cursor-pointer`}
+            className={`flex items-center justify-between ${card.color} p-6 rounded-lg shadow transition-all duration-500 transform hover:scale-105 cursor-pointer`}
           >
             <div className="flex flex-col">
-              <p className={`${card.textColor} text-2xl`}>{card.icon}</p>
-              <p className="text-gray-700 text-sm mt-1">{card.title}</p>
+              <p className={`${card.textColor} text-3xl`}>{card.icon}</p>
+              <p className="text-gray-700 text-sm mt-2">{card.title}</p>
               {typeof card.value === "number" ? (
-                <p className="text-2xl font-bold">
+                <p className="text-3xl font-bold mt-1">
                   <CountUp end={card.value} duration={1.5} />
                 </p>
               ) : (
-                <p className="text-2xl font-bold">{card.value}</p>
+                <p className="text-3xl font-bold mt-1">{card.value}</p>
               )}
             </div>
           </div>

@@ -62,3 +62,18 @@ def get_user_profile(current_user: User = Depends(get_current_user)):
         role=current_user.role,
         joined_at=current_user.joined_at.isoformat()
     )
+
+@router.get("/all")
+def get_all_users(db: Session = Depends(get_db)):
+    """Return all users (for tagging, feed display, etc.)"""
+    users = db.query(User).all()
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "department": u.department,
+            "role": u.role,
+        }
+        for u in users
+    ]

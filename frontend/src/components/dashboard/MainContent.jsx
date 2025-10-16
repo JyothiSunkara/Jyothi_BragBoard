@@ -1,18 +1,30 @@
 import DashboardContent from "./DashboardContent";
-import ShoutoutFeed from "./ShoutOutFeed"; // we'll create this
-import CreateShoutout from "./ShoutOutForm"; // we'll create this too
+import ShoutOutFeed from "./ShoutOutFeed";
+import ShoutOutForm from "./ShoutOutForm";
+import MyShoutOuts from "./MyShoutOuts";
 
-const MainContent = ({ activeView, user }) => {
+const MainContent = ({ activeView, user, shoutouts, handleDeleteShout }) => {
   switch (activeView) {
     case "dashboard":
       return <DashboardContent currentUser={user} />;
-
     case "feed":
-      return <ShoutoutFeed currentUser={user} />;
-
+      return (
+        <ShoutOutFeed
+          currentUser={user}
+          shoutouts={shoutouts}
+          handleDeleteShout={handleDeleteShout}
+        />
+      );
     case "create":
-      return <CreateShoutout currentUser={user} />;
-
+      return <ShoutOutForm currentUser={user} />;
+    case "my-shoutouts":
+      return (
+        <MyShoutOuts
+          currentUser={user}
+          shoutouts={shoutouts}
+          handleDeleteShout={handleDeleteShout}
+        />
+      );
     default:
       return <div className="text-gray-500">Coming soon...</div>;
   }

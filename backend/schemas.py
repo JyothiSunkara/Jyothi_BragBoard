@@ -3,7 +3,6 @@ from typing import List, Optional
 from datetime import datetime
 from enum import Enum
 
-
 # ===== Enums =====
 class CategoryEnum(str, Enum):
     teamwork = "teamwork"
@@ -17,6 +16,7 @@ class CategoryEnum(str, Enum):
 class VisibilityEnum(str, Enum):
     public = "public"
     private = "private"
+    department_only = "department_only"
 
 
 # ===== User Schemas =====
@@ -47,8 +47,9 @@ class UserProfile(BaseModel):
     role: str
     joined_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class UserOut(BaseModel):
@@ -58,8 +59,9 @@ class UserOut(BaseModel):
     department: str
     role: str
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 # ===== ShoutOut Schemas =====
@@ -70,6 +72,7 @@ class ShoutOutCreate(BaseModel):
     tagged_user_ids: Optional[List[int]] = []
     category: CategoryEnum
     is_public: VisibilityEnum = VisibilityEnum.public
+    image_url: Optional[str] = None  # Optional for image
 
 
 class ShoutOutResponse(BaseModel):
@@ -80,13 +83,17 @@ class ShoutOutResponse(BaseModel):
     receiver_name: str
     giver_department: str
     receiver_department: str
+    giver_role: Optional[str]
+    receiver_role: Optional[str]        
     tagged_users: List[UserOut] = []
     category: CategoryEnum
     is_public: VisibilityEnum
     created_at: datetime
+    image_url: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class DepartmentStats(BaseModel):
@@ -95,5 +102,6 @@ class DepartmentStats(BaseModel):
     shoutouts_given: int
     shoutouts_received: int
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }

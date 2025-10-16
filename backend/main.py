@@ -5,6 +5,7 @@ from routers import users, shoutouts
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database_models import Base
+from fastapi.staticfiles import StaticFiles
 
 Base.metadata.create_all(bind=engine)
 
@@ -31,6 +32,8 @@ def health_check(db: Session = Depends(get_db)):
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "database": str(e)}
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(users.router)
 app.include_router(shoutouts.router)  
