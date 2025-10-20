@@ -7,6 +7,7 @@ import ApiService from "../../services/api";
 const Dashboard = ({ user, onLogout }) => {
   const [activeView, setActiveView] = useState("dashboard");
   const [shoutouts, setShoutouts] = useState([]);
+  const [shoutoutUpdated, setShoutoutUpdated] = useState(false);
 
   // Fetch shoutouts on mount
   useEffect(() => {
@@ -27,6 +28,10 @@ const Dashboard = ({ user, onLogout }) => {
     fetchShoutouts();
   }, []);
 
+  const handleShoutoutPosted = () => {
+    setShoutoutUpdated((prev) => !prev); // toggles to notify feed
+  };
+  
   // Handle delete locally
   const handleDeleteShout = (id) => {
     setShoutouts((prev) => prev.filter((s) => s.id !== id));
@@ -51,6 +56,8 @@ const Dashboard = ({ user, onLogout }) => {
             user={user}
             shoutouts={shoutouts}
             handleDeleteShout={handleDeleteShout}
+            shoutoutUpdated={shoutoutUpdated}      
+            handleShoutoutPosted={handleShoutoutPosted}
           />
         </div>
       </div>

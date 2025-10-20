@@ -57,7 +57,7 @@ const Login = ({ onSuccess, onToggleMode }) => {
               </div>
             )}
 
-            {/* Input Stack without labels */}
+           
             <div className="space-y-4">
               <input
                 id="email"

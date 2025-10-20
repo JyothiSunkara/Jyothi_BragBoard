@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Login from './Login';
-import Register from './Register';
+import Login from '../Login';
+import Register from '../Register';
 
 const Auth = ({ onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);

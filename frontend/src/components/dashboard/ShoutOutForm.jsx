@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ApiService from "../../services/api";
 import { ImageIcon } from "lucide-react";
 
-const ShoutOutForm = ({ currentUser }) => {
+const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
   const [message, setMessage] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [receiver, setReceiver] = useState(null);
@@ -51,6 +51,10 @@ const ShoutOutForm = ({ currentUser }) => {
     }
   };
 
+  const removeTag = (userId) => {
+    setTaggedUsers(taggedUsers.filter((u) => u.id !== userId));
+  };
+
   // -------------------- HANDLE IMAGE UPLOAD --------------------
   const handleImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -74,13 +78,13 @@ const ShoutOutForm = ({ currentUser }) => {
 
     try {
       await ApiService.createShoutout({
-        title: "", // optional
+        title: "",
         message,
         receiver_id: receiver.id,
         tagged_user_ids: taggedUsers.map((u) => u.id),
         category,
         is_public: visibility,
-        imageFile, // optional
+        imageFile,
       });
 
       // Reset form
@@ -93,6 +97,9 @@ const ShoutOutForm = ({ currentUser }) => {
 
       setSuccessMessage("🎉 Shout-Out sent successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
+
+      // ✅ Notify parent to update feed
+      if (onShoutoutPosted) onShoutoutPosted();
     } catch (err) {
       console.error("Failed to post shoutout:", err);
       alert("Failed to post shoutout: " + err.message);
@@ -114,7 +121,7 @@ const ShoutOutForm = ({ currentUser }) => {
 
       {/* Message */}
       <textarea
-        className="w-full h-36 p-4 border rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-400 mb-4 resize-none bg-white shadow-sm"
+        className="w-full h-36 p-4 border rounded-lg hover:border-violet-500 mb-4 resize-none bg-white shadow-sm"
         placeholder="Write your shoutout..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -151,13 +158,36 @@ const ShoutOutForm = ({ currentUser }) => {
       {/* Tag People */}
       <div className="relative mb-4" ref={tagRef}>
         <button
-          className="w-full text-left p-3 border rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm"
+          className="w-full text-left p-3 border rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm flex flex-wrap gap-1 items-center min-h-[2.5rem]"
           onClick={() => setShowTagDropdown(!showTagDropdown)}
         >
-          {taggedUsers.length > 0
-            ? `Tagged: ${taggedUsers.map((u) => u.username).join(", ")}`
-            : "Tag People"}
+          {taggedUsers.length === 0 ? (
+            <span>Tag People</span>
+          ) : (
+            <>
+              <span className="text-gray-600 font-semibold text-sm">Tagged:</span>
+              {taggedUsers.map((u) => (
+                <span
+                  key={u.id}
+                  className="flex items-center gap-1 bg-violet-200 text-violet-800 px-2 py-1 rounded-full text-sm"
+                >
+                  {u.username}
+                  <button
+                    type="button"
+                    className="font-bold hover:text-red-600"
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent dropdown toggle
+                      removeTag(u.id);
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </>
+          )}
         </button>
+
         {showTagDropdown && (
           <div className="absolute w-full max-h-60 overflow-y-auto border bg-white z-50 mt-1 rounded-lg shadow-lg">
             {allUsers
@@ -166,7 +196,9 @@ const ShoutOutForm = ({ currentUser }) => {
                 <div
                   key={u.id}
                   className={`p-2 cursor-pointer hover:bg-violet-100 transition-colors ${
-                    taggedUsers.some((t) => t.id === u.id) ? "bg-violet-200" : ""
+                    taggedUsers.some((t) => t.id === u.id)
+                      ? "bg-violet-200 font-semibold"
+                      : ""
                   }`}
                   onClick={() => toggleTagUser(u)}
                 >
@@ -189,8 +221,6 @@ const ShoutOutForm = ({ currentUser }) => {
             onChange={handleImageUpload}
           />
         </label>
-
-        {/* Uploaded image name + delete button */}
         {imageFile && (
           <div className="mt-2 flex items-center gap-2 bg-gray-100 p-2 rounded-lg w-max">
             <span className="text-sm">{imageFile.name}</span>
@@ -203,8 +233,6 @@ const ShoutOutForm = ({ currentUser }) => {
             </button>
           </div>
         )}
-
-        {/* Image preview */}
         {imagePreview && (
           <img
             src={imagePreview}
@@ -221,7 +249,9 @@ const ShoutOutForm = ({ currentUser }) => {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
-          <option value="" disabled>Select Category</option>
+          <option value="" disabled>
+            Select Category
+          </option>
           <option value="teamwork">Teamwork</option>
           <option value="innovation">Innovation</option>
           <option value="leadership">Leadership</option>
@@ -240,6 +270,7 @@ const ShoutOutForm = ({ currentUser }) => {
         >
           <option value="public">Public</option>
           <option value="private">Private</option>
+          <option value="department_only">Department Only</option>
         </select>
       </div>
 
