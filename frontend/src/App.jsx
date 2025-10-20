@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Auth from './components/Auth'
+import Auth from './components/auth/Auth'
 import Dashboard from './components/dashboard/Dashboard'
 import './App.css'
 
