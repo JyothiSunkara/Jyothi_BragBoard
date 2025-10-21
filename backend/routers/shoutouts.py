@@ -37,9 +37,12 @@ def create_shoutout(
     receiver = db.query(User).filter(User.id == shoutout.receiver_id).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
+    
+    # Generate title if empty
+    title = shoutout.title.strip() if shoutout.title else f"Shoutout from {current_user.username}"
 
     new_shoutout = ShoutOut(
-        title=shoutout.title,
+        title=title,
         message=shoutout.message,
         giver_id=current_user.id,
         receiver_id=shoutout.receiver_id,

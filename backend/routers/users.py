@@ -77,3 +77,18 @@ def get_all_users(db: Session = Depends(get_db)):
         }
         for u in users
     ]
+
+
+@router.delete("/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # Employees can delete only their own account; admins can delete any account
+    if current_user.id != user_id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to delete this user")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(user)
+    db.commit()
+    return {"detail": "User deleted successfully"}

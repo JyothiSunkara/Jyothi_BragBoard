@@ -150,6 +150,21 @@ export default function ShoutOutFeed({
 
           <p className="text-gray-700 my-2">{shout.message}</p>
 
+          {/* Tagged Users */}
+          {shout.tagged_users?.length > 0 && (
+          <div className="mt-2">
+            <span className="text-gray-500 text-sm">Tagged: </span>
+              {shout.tagged_users.map((u) => (
+            <span
+              key={u.id}
+              className="bg-violet-200 text-violet-800 px-2 py-1 rounded-full text-xs mr-1"
+            >
+              {u.username}
+            </span>
+            ))}
+          </div>
+          )}
+
           {/* Reactions */}
           <div className="flex items-center space-x-4 mt-3">
             <button
