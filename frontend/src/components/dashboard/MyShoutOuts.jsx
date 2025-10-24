@@ -1,149 +1,240 @@
 import { useState, useEffect } from "react";
-import dayjs from "dayjs";
-import ShoutOutFeed from "./ShoutOutFeed";
+import { Edit2, Trash2, TargetIcon } from "lucide-react";
 import ApiService from "../../services/api";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { motion } from "framer-motion";
 
-export default function MyShoutOuts({ currentUser, handleDeleteShout }) {
-  const [selectedDepartment, setSelectedDepartment] = useState("all");
+dayjs.extend(utc);
+
+export default function MyShoutOuts({ currentUser, handleDeleteShout, handleEditShout }) {
+  const [shoutouts, setShoutouts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [receiverDept, setReceiverDept] = useState("All Departments");
   const [timeFilter, setTimeFilter] = useState("all");
-  const [data, setData] = useState({
-    total: 0,
-    sent: 0,
-    received: 0,
-    shoutouts: [],
-  });
-  const [loading, setLoading] = useState(false);
+  const [searchName, setSearchName] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [stats, setStats] = useState({ total: 0, sent: 0, received: 0 });
 
   const departments = [
+    "All Departments",
     "Engineering",
-    "Marketing",
-    "Human Resources",
-    "Finance",
-    "Design",
+    "HR",
     "Sales",
+    "Marketing",
+    "Finance",
     "Operations",
-    "Product",
-    "Support",
+    "Design",
   ];
 
-  // Fetch shoutouts for current user
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const result = await ApiService.getMyShoutouts(selectedDepartment, timeFilter);
-        setData(result);
-      } catch (err) {
-        console.error("Failed to fetch my shoutouts:", err);
-      } finally {
-        setLoading(false);
+  const fetchShoutouts = async () => {
+    setLoading(true);
+    try {
+      const res = await ApiService.getMyShoutouts({
+        receiver_department: receiverDept === "All Departments" ? "all" : receiverDept,
+        days: timeFilter === "all" ? undefined : parseInt(timeFilter),
+      });
+
+      let data = res.shoutouts || [];
+
+      if (searchName.trim() !== "") {
+        data = data.filter((s) =>
+          s.receiver_name.toLowerCase().includes(searchName.toLowerCase())
+        );
       }
-    };
-    fetchData();
-  }, [selectedDepartment, timeFilter]);
 
-  // ------------------ Filter shoutouts ------------------
-  const filteredByDepartment = data.shoutouts.filter((s) => {
-    if (selectedDepartment === "all") return true;
-    return (
-      s.receiver_department === selectedDepartment ||
-      s.tagged_users?.some((u) => u.department === selectedDepartment)
-    );
-  });
+      setShoutouts(data.reverse());
+      setStats({ total: res.total, sent: res.sent, received: res.received });
+    } catch (err) {
+      console.error("Failed to fetch my shoutouts", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filtered = filteredByDepartment.filter((s) => {
-    if (timeFilter === "all") return true;
-    const cutoff = dayjs().subtract(parseInt(timeFilter), "day");
-    return dayjs(s.created_at).isAfter(cutoff);
-  });
+  useEffect(() => {
+    fetchShoutouts();
+  }, [receiverDept, timeFilter, searchName]);
 
-  // ------------------ Compute stats ------------------
-  const total = filtered.length;
-  const sent = filtered.filter((s) => s.giver_name === currentUser?.username).length;
-  const received = filtered.filter(
-    (s) =>
-      s.receiver_name === currentUser?.username ||
-      s.tagged_users?.some((u) => u.username === currentUser?.username)
-  ).length;
+  const editShoutout = (shout) => {
+    handleEditShout(shout);
+    setOpenMenuId(null);
+  };
+
+  const deleteShoutout = (id) => {
+    handleDeleteShout(id);
+    setOpenMenuId(null);
+  };
+
+  const clearFilters = () => {
+    setReceiverDept("All Departments");
+    setTimeFilter("all");
+    setSearchName("");
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-extrabold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">
-        My Shout-Outs
-      </h1>
-
+    <div className="p-4 flex flex-col space-y-6">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <div>
-          <label className="text-sm text-gray-600 mr-2 font-semibold">
-            Department:
-          </label>
+      <motion.div className="bg-white p-5 rounded-3xl shadow-lg flex flex-wrap items-center gap-4 sticky top-4 z-10"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center space-x-2 min-w-[200px]">
+          <label className="text-sm font-medium text-gray-700">Receiver Department:</label>
           <select
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 shadow-sm"
+            value={receiverDept}
+            onChange={(e) => setReceiverDept(e.target.value)}
+            className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none transition-all hover:border-green-400"
           >
-            <option value="all">All Departments</option>
             {departments.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
+              <option key={d} value={d}>{d}</option>
             ))}
           </select>
         </div>
 
-        <div>
-          <label className="text-sm text-gray-600 mr-2 font-semibold">
-            Time:
-          </label>
+        <div className="flex items-center space-x-2 min-w-[200px]">
+          <label className="text-sm font-medium text-gray-700">Time:</label>
           <select
             value={timeFilter}
             onChange={(e) => setTimeFilter(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 shadow-sm"
+            className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none transition-all hover:border-purple-400"
           >
             <option value="all">All Time</option>
             <option value="7">Last 7 Days</option>
             <option value="30">Last 30 Days</option>
           </select>
         </div>
-      </div>
+
+        <input
+          type="text"
+          placeholder="Search by receiver name"
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+          className="flex-1 min-w-[250px] border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
+        />
+
+        <motion.button
+          onClick={clearFilters}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center text-sm bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold px-4 py-2 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+        >
+          Clear Filters
+        </motion.button>
+      </motion.div>
 
       {/* Stats */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="bg-white p-5 rounded-xl shadow flex-1 text-center border border-gray-100">
           <p className="text-gray-500">Total Shout-Outs</p>
-          <p className="text-2xl font-bold text-indigo-600">{total}</p>
+          <p className="text-2xl font-bold text-indigo-600">{stats.total}</p>
         </div>
         <div className="bg-white p-5 rounded-xl shadow flex-1 text-center border border-gray-100">
           <p className="text-gray-500">Sent</p>
-          <p className="text-2xl font-bold text-green-600">{sent}</p>
+          <p className="text-2xl font-bold text-green-600">{stats.sent}</p>
         </div>
         <div className="bg-white p-5 rounded-xl shadow flex-1 text-center border border-gray-100">
           <p className="text-gray-500">Received</p>
-          <p className="text-2xl font-bold text-pink-600">{received}</p>
+          <p className="text-2xl font-bold text-pink-600">{stats.received}</p>
         </div>
       </div>
 
-      {/* Feed */}
-      {loading ? (
-        <div className="text-center text-gray-500">Loading...</div>
-      ) : filtered.length > 0 ? (
-        <ShoutOutFeed
-          currentUser={currentUser}
-          shoutouts={filtered}
-          handleDeleteShout={handleDeleteShout}
-        />
-      ) : (
-        <div className="bg-white p-6 rounded-xl shadow text-center text-gray-500 border border-gray-100">
-          You haven’t sent or received any shout-outs
-          {selectedDepartment !== "all"
-            ? ` in the ${selectedDepartment} department`
-            : ""}
-          {timeFilter !== "all"
-            ? ` within the last ${timeFilter} days.`
-            : "."}
+      {/* Shoutouts */}
+      {loading && <div className="text-center mt-6 text-gray-500">Loading...</div>}
+      {!loading && shoutouts.length === 0 && (
+        <div className="text-center mt-2 text-pink-600 font-semibold text-lg bg-pink-50 py-4 rounded-xl mx-6 shadow-inner">
+          No shoutouts found for the selected filters.
         </div>
       )}
+
+      {shoutouts.map((shout) => (
+        <motion.div
+          key={shout.id}
+          className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-2xl shadow hover:shadow-xl transition-all duration-200 relative"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {/* Header: Sender */}
+          <div className="flex justify-between items-start mb-3 relative">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {shout.giver_name?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800">{shout.giver_name}</p>
+                <p className="text-gray-500 text-xs">
+                  {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end relative">
+              <p className="text-gray-400 text-xs">
+                {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
+              </p>
+
+              {shout.giver_id === currentUser.id && (
+                <div className="relative mt-1">
+                  <button
+                    onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
+                    className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
+                  >
+                    ⋮
+                  </button>
+
+                  {openMenuId === shout.id && (
+                    <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
+                      <button
+                        onClick={() => editShoutout(shout)}
+                        className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
+                      >
+                        <Edit2 size={14} /> Edit
+                      </button>
+                      <button
+                        onClick={() => deleteShoutout(shout.id)}
+                        className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Receiver */}
+          <div className="flex items-center mb-2">
+            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+              To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
+            </span>
+          </div>
+
+          {/* Message */}
+          <p className="text-gray-700 my-2">{shout.message}</p>
+
+          {/* Image */}
+          {shout.image_url && (
+            <img
+              src={shout.image_url}
+              alt="shoutout"
+              className="w-full h-44 object-cover rounded-lg mt-2 mb-2 shadow-sm"
+            />
+          )}
+
+          {/* Tagged Users */}
+          {shout.tagged_users?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {shout.tagged_users.map((u) => (
+                <div key={u.id} className="flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-purple-100">
+                  <TargetIcon size={12} className="mr-1 text-gray-700" />
+                  {u.username}
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      ))}
     </div>
   );
 }

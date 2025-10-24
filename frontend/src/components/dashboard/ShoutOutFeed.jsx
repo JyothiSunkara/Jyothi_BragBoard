@@ -1,32 +1,45 @@
 import { useState, useEffect } from "react";
-import { MoreVertical } from "lucide-react";
+import { Edit2, Trash2, Filter, RotateCcw, TargetIcon } from "lucide-react";
 import ApiService from "../../services/api";
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
+import { motion } from "framer-motion";
 
 dayjs.extend(utc);
-dayjs.extend(relativeTime);
 
-export default function ShoutOutFeed({
-  currentUser,
-  shoutouts: initialShoutouts,
-  shoutoutUpdated,
-  handleDeleteShout
-}) {
-  const [shoutouts, setShoutouts] = useState(initialShoutouts || []);
-  const [loading, setLoading] = useState(!initialShoutouts);
+export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
+  const [shoutouts, setShoutouts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [senderDept, setSenderDept] = useState("All Departments");
+  const [receiverDept, setReceiverDept] = useState("All Departments");
+  const [searchName, setSearchName] = useState("");
+  const [date, setDate] = useState("");
+  const [filtered, setFiltered] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
-  const [openCommentMenuId, setOpenCommentMenuId] = useState(null);
+
+  const departments = [
+    "All Departments",
+    "Engineering",
+    "HR",
+    "Sales",
+    "Marketing",
+    "Finance",
+    "Operations",
+    "Design",
+  ];
 
   const fetchShoutouts = async () => {
+    setLoading(true);
     try {
       const res = await ApiService.getShoutouts();
       const visible = res.filter(
         (s) =>
-          s.is_public || s.giver_id === currentUser.id || s.receiver_id === currentUser.id
+          s.is_public ||
+          s.giver_id === currentUser.id ||
+          s.receiver_id === currentUser.id
       );
-      setShoutouts(visible);
+      setShoutouts(visible.reverse());
     } catch (err) {
       console.error("Failed to fetch shoutouts", err);
     } finally {
@@ -34,217 +47,249 @@ export default function ShoutOutFeed({
     }
   };
 
-  // Fetch on mount if no initial shoutouts
   useEffect(() => {
-    if (!initialShoutouts) fetchShoutouts();
+    fetchShoutouts();
   }, []);
 
-  // Refetch when shoutoutUpdated toggles
   useEffect(() => {
     if (shoutoutUpdated) fetchShoutouts();
   }, [shoutoutUpdated]);
 
-  const toggleReaction = async (shoutId, type) => {
-    setShoutouts((prev) =>
-      prev.map((s) => {
-        if (s.id === shoutId) {
-          const hasReacted = s[type]?.includes(currentUser.id);
-          return {
-            ...s,
-            [type]: hasReacted
-              ? s[type].filter((id) => id !== currentUser.id)
-              : [...(s[type] || []), currentUser.id],
-          };
-        }
-        return s;
-      })
-    );
+  useEffect(() => {
+    let result = [...shoutouts];
 
-    try {
-      const shout = shoutouts.find((s) => s.id === shoutId);
-      const hasReacted = shout[type]?.includes(currentUser.id);
-      if (hasReacted) await ApiService.removeReaction(shoutId, type);
-      else await ApiService.addReaction(shoutId, type);
-    } catch (err) {
-      console.error("Reaction failed:", err);
+    if (senderDept !== "All Departments") {
+      result = result.filter((s) => s.giver_department === senderDept);
     }
+
+    if (receiverDept !== "All Departments") {
+      result = result.filter((s) => s.receiver_department === receiverDept);
+    }
+
+    if (searchName.trim() !== "") {
+      result = result.filter(
+        (s) =>
+          s.giver_name.toLowerCase().includes(searchName.toLowerCase()) ||
+          s.receiver_name?.toLowerCase().includes(searchName.toLowerCase())
+      );
+    }
+
+    if (date) {
+      result = result.filter((s) =>
+        dayjs(s.created_at).isSame(dayjs(date), "day")
+      );
+    }
+
+    setFiltered(result);
+  }, [senderDept, receiverDept, searchName, date, shoutouts]);
+
+  const clearFilters = () => {
+    setSenderDept("All Departments");
+    setReceiverDept("All Departments");
+    setSearchName("");
+    setDate("");
   };
 
-  const addComment = async (shoutId, text, resetInput) => {
-    if (!text.trim()) return;
-    try {
-      await ApiService.addComment(shoutId, { user_id: currentUser.id, text });
-      fetchShoutouts();
-      resetInput();
-    } catch (err) {
-      console.error("Add comment failed:", err);
-    }
-  };
+  const editShoutout = async (shout) => {
+    const newMessage = prompt("Edit shoutout message:", shout.message);
+    if (!newMessage || newMessage.trim() === "" || newMessage === shout.message)
+      return;
 
-  const deleteComment = async (commentId) => {
     try {
-      await ApiService.deleteComment(commentId);
-      fetchShoutouts();
-    } catch (err) {
-      console.error("Delete comment failed:", err);
-    }
-  };
-
-  const editComment = async (shoutId, commentId, currentText) => {
-    const newText = prompt("Edit your comment:", currentText);
-    if (!newText || newText.trim() === "" || newText === currentText) return;
-    try {
-      await ApiService.updateComment(shoutId, commentId, { text: newText });
+      await ApiService.updateShoutout(shout.id, { message: newMessage });
       fetchShoutouts();
     } catch (err) {
-      console.error("Edit comment failed:", err);
+      console.error("Edit shoutout failed:", err);
     }
   };
 
-  if (!currentUser) return <div className="text-center mt-6 text-gray-500">Loading user...</div>;
-  if (loading) return <div className="text-center mt-6 text-gray-500">Loading feed...</div>;
-  if (!shoutouts.length) return <div className="text-center mt-6 text-gray-500">No shoutouts yet!</div>;
+  const deleteShoutout = async (shoutId) => {
+    if (!confirm("Are you sure you want to delete this shoutout?")) return;
+    try {
+      await ApiService.deleteShoutout(shoutId);
+      setShoutouts((prev) => prev.filter((s) => s.id !== shoutId));
+    } catch (err) {
+      console.error("Delete shoutout failed:", err);
+    }
+  };
 
   return (
-    <div className="flex flex-col space-y-6 p-4">
-      {shoutouts.map((shout) => (
-        <div key={shout.id} className="bg-white p-6 rounded-lg shadow hover:shadow-xl relative w-full">
-          {/* Timestamp */}
-          <p className="absolute top-4 right-4 text-gray-400 text-sm">
-            {dayjs.utc(shout.created_at).local().fromNow()}
-          </p>
+    <div className="p-4 flex flex-col space-y-6">
+      {/* Filters */}
+      <motion.div
+        className="bg-white p-5 rounded-3xl shadow-lg flex flex-wrap items-center gap-4 sticky top-4 z-10"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Filter className="text-gray-600" size={20} />
 
-          {/* Header */}
-          <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2 min-w-[200px]">
+          <label className="text-sm font-medium text-gray-700">Sender:</label>
+          <select
+            value={senderDept}
+            onChange={(e) => setSenderDept(e.target.value)}
+            className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none transition-all hover:border-blue-400"
+          >
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center space-x-2 min-w-[200px]">
+          <label className="text-sm font-medium text-gray-700">Receiver:</label>
+          <select
+            value={receiverDept}
+            onChange={(e) => setReceiverDept(e.target.value)}
+            className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none transition-all hover:border-green-400"
+          >
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
+          </select>
+        </div>
+
+        <input
+          type="text"
+          placeholder="Search by sender or receiver"
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+          className="flex-1 min-w-[250px] border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
+        />
+
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
+        />
+
+        <motion.button
+          onClick={clearFilters}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center text-sm bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold px-4 py-2 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+        >
+          <RotateCcw size={18} className="mr-2" /> Clear Filters
+        </motion.button>
+      </motion.div>
+
+      {/* Feed Heading */}
+      {!loading && filtered.length > 0 && (
+        <motion.div
+          className="text-center font-semibold text-lg text-purple-600 mb-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          🎉 Shoutouts Feed {senderDept !== "All Departments" ? `from ${senderDept}` : ""}{" "}
+          {receiverDept !== "All Departments" ? `to ${receiverDept}` : ""} 🎉
+        </motion.div>
+      )}
+
+      {/* Loading */}
+      {loading && <div className="text-center mt-6 text-gray-500">Loading feed...</div>}
+
+      {/* No shoutouts */}
+      {!loading && filtered.length === 0 && (
+        <motion.div className="text-center mt-2 text-pink-600 font-semibold text-lg bg-pink-50 py-4 rounded-xl mx-6 shadow-inner"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+           No shoutouts match your filters! 
+        </motion.div>
+      )}
+
+      {/* Feed */}
+      {filtered.map((shout) => (
+        <motion.div
+          key={shout.id}
+          className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-2xl shadow hover:shadow-xl transition-all duration-200 relative"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {/* Header: Giver info + Date + 3-dot menu */}
+          <div className="flex justify-between items-start mb-3 relative">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-300 to-purple-300 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 {shout.giver_name?.charAt(0).toUpperCase() || "U"}
               </div>
               <div>
                 <p className="font-semibold text-gray-800">{shout.giver_name}</p>
-                <p className="text-gray-500 text-xs">{`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}</p>
+                <p className="text-gray-500 text-xs">
+                  {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
+                </p>
               </div>
             </div>
 
-            {shout.giver_id === currentUser.id && (
-              <div className="relative">
-                <button
-                  className="text-gray-400 hover:text-gray-600"
-                  onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
-                >
-                  <MoreVertical size={16} />
-                </button>
-                {openMenuId === shout.id && (
-                  <div className="absolute right-0 mt-1 w-24 bg-white border border-gray-200 rounded shadow-md z-10">
-                    <button
-                      onClick={() => handleDeleteShout(shout.id)}
-                      className="w-full text-left px-3 py-1 text-red-500 hover:bg-gray-100"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+            <div className="flex flex-col items-end relative">
+              <p className="text-gray-400 text-xs">
+                {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
+              </p>
 
-          <p className="text-gray-700 my-2">{shout.message}</p>
+              {shout.giver_id === currentUser.id && (
+                <div className="relative mt-1">
+                  <button
+                    onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
+                    className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
+                  >
+                    ⋮
+                  </button>
 
-          {/* Tagged Users */}
-          {shout.tagged_users?.length > 0 && (
-          <div className="mt-2">
-            <span className="text-gray-500 text-sm">Tagged: </span>
-              {shout.tagged_users.map((u) => (
-            <span
-              key={u.id}
-              className="bg-violet-200 text-violet-800 px-2 py-1 rounded-full text-xs mr-1"
-            >
-              {u.username}
-            </span>
-            ))}
-          </div>
-          )}
-
-          {/* Reactions */}
-          <div className="flex items-center space-x-4 mt-3">
-            <button
-              onClick={() => toggleReaction(shout.id, "likes")}
-              className={`flex items-center space-x-1 ${
-                shout.likes?.includes(currentUser.id) ? "text-blue-500 font-bold" : "text-gray-500"
-              }`}
-            >
-              👍 <span>{shout.likes?.length || 0}</span>
-            </button>
-            <button
-              onClick={() => toggleReaction(shout.id, "claps")}
-              className={`flex items-center space-x-1 ${
-                shout.claps?.includes(currentUser.id) ? "text-yellow-500 font-bold" : "text-gray-500"
-              }`}
-            >
-              👏 <span>{shout.claps?.length || 0}</span>
-            </button>
-            <div className="flex items-center space-x-1 text-gray-500">💬 <span>{shout.comments?.length || 0}</span></div>
-          </div>
-
-          {/* Comments */}
-          <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
-            {shout.comments?.map((c) => (
-              <div key={c.id} className="bg-gray-50 rounded p-3 flex flex-col space-y-1 relative">
-                <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 bg-gradient-to-r from-blue-300 to-purple-300 rounded-full flex items-center justify-center text-white font-semibold text-xs">
-                    {c.user?.username?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <div className="flex flex-col">
-                    <p className="font-semibold text-gray-800 text-sm">{c.user?.username}</p>
-                    <p className="text-gray-500 text-xs">{c.user?.department}{c.user?.role ? ` | ${c.user.role}` : ""}</p>
-                  </div>
-
-                  {c.user?.id === currentUser.id && (
-                    <div className="ml-auto relative">
+                  {openMenuId === shout.id && (
+                    <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
                       <button
-                        className="text-gray-400 hover:text-gray-600"
-                        onClick={() => setOpenCommentMenuId(openCommentMenuId === c.id ? null : c.id)}
+                        onClick={() => { editShoutout(shout); setOpenMenuId(null); }}
+                        className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
                       >
-                        <MoreVertical size={16} />
+                        <Edit2 size={14} /> Edit
                       </button>
-                      {openCommentMenuId === c.id && (
-                        <div className="absolute right-0 mt-1 w-24 bg-white border border-gray-200 rounded shadow-md z-10">
-                          <button onClick={() => editComment(shout.id, c.id, c.text)} className="w-full text-left px-3 py-1 text-gray-700 hover:bg-gray-100">Edit</button>
-                          <button onClick={() => deleteComment(c.id)} className="w-full text-left px-3 py-1 text-red-500 hover:bg-gray-100">Delete</button>
-                        </div>
-                      )}
+                      <button
+                        onClick={() => { deleteShoutout(shout.id); setOpenMenuId(null); }}
+                        className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
                     </div>
                   )}
                 </div>
-                <p className="text-gray-700 pl-9 text-sm">{c.text}</p>
-              </div>
-            ))}
-            <CommentInput shoutId={shout.id} onAdd={addComment} />
+              )}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
-function CommentInput({ shoutId, onAdd }) {
-  const [text, setText] = useState("");
-  return (
-    <div className="flex mt-2 space-x-2">
-      <input
-        type="text"
-        placeholder="Add a comment..."
-        className="flex-1 border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring focus:border-blue-300"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onAdd(shoutId, text, () => setText(""))}
-      />
-      <button
-        onClick={() => onAdd(shoutId, text, () => setText(""))}
-        className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600"
-      >
-        Post
-      </button>
+          {/* Receiver */}
+          {shout.receiver_name && (
+            <div className="flex items-center mb-2">
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+                To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
+              </span>
+            </div>
+          )}
+
+          {/* Message */}
+          <p className="text-gray-700 my-2">{shout.message}</p>
+
+          {/* Image */}
+          {shout.image_url && (
+            <img
+              src={shout.image_url}
+              alt="shoutout"
+              className="w-full h-44 object-cover rounded-lg mt-2 mb-2 shadow-sm"
+            />
+          )}
+
+          {/* Tagged Users */}
+          {shout.tagged_users?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {shout.tagged_users.map((u) => (
+                <div key={u.id} className="flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-purple-100">
+                  <TargetIcon size={12} className="mr-1 text-gray-700" />
+                  {u.username}
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      ))}
     </div>
   );
 }

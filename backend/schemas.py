@@ -77,6 +77,8 @@ class ShoutOutCreate(BaseModel):
 
 class ShoutOutResponse(BaseModel):
     id: int
+    giver_id: int          
+    receiver_id: int 
     title: str
     message: str
     giver_name: str
