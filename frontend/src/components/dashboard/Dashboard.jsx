@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import MainContent from "./MainContent";
-import ApiService from "../../services/api"; 
 
 const Dashboard = ({ user, onLogout }) => {
   const [activeView, setActiveView] = useState("dashboard");
