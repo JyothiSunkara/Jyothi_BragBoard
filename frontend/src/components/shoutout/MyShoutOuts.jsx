@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit2, Trash2, TargetIcon } from "lucide-react";
+import { Edit2, Trash2, TargetIcon, RotateCcw } from "lucide-react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { motion } from "framer-motion";
@@ -21,7 +21,7 @@ export default function MyShoutOuts({ currentUser }) {
   const departments = [
     "All Departments",
     "Engineering",
-    "HR",
+    "Human Resources",
     "Sales",
     "Marketing",
     "Finance",
@@ -92,6 +92,13 @@ export default function MyShoutOuts({ currentUser }) {
 
   return (
     <div className="p-4 flex flex-col space-y-6">
+     <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 text-transparent bg-clip-text">
+       My Shout-Outs
+      </h2>
+      <p className="text-gray-500 mb-6">
+           Track the shout-outs you’ve sent and received, and stay engaged with your team 💬
+      </p>
+
       {/* Filters */}
       <motion.div
         className="bg-white p-5 rounded-3xl shadow-lg flex flex-wrap items-center gap-4 sticky top-4 z-10"
@@ -138,25 +145,42 @@ export default function MyShoutOuts({ currentUser }) {
           whileTap={{ scale: 0.95 }}
           className="flex items-center text-sm bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold px-4 py-2 rounded-2xl shadow-lg hover:shadow-xl transition-all"
         >
-          Clear Filters
+          <RotateCcw size={18} className="mr-2" /> Clear Filters
         </motion.button>
       </motion.div>
 
       {/* Stats */}
       <div className="flex flex-wrap gap-4 mb-6">
-        <div className="bg-white p-5 rounded-xl shadow flex-1 text-center border border-gray-100">
-          <p className="text-gray-500">Total Shout-Outs</p>
-          <p className="text-2xl font-bold text-indigo-600">{stats.total}</p>
-        </div>
-        <div className="bg-white p-5 rounded-xl shadow flex-1 text-center border border-gray-100">
-          <p className="text-gray-500">Sent</p>
-          <p className="text-2xl font-bold text-green-600">{stats.sent}</p>
-        </div>
-        <div className="bg-white p-5 rounded-xl shadow flex-1 text-center border border-gray-100">
-          <p className="text-gray-500">Received</p>
-          <p className="text-2xl font-bold text-pink-600">{stats.received}</p>
-        </div>
-      </div>
+      <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="bg-gradient-to-br from-white to-indigo-50 p-5 rounded-xl shadow-md flex-1 text-center border border-gray-100 hover:shadow-xl cursor-pointer transition-all"
+      >
+      <p className="text-gray-500">Total Shout-Outs</p>
+      <p className="text-2xl font-bold text-indigo-600">{stats.total}</p>
+      </motion.div>
+      <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="bg-gradient-to-br from-white to-green-50 p-5 rounded-xl shadow-md flex-1 text-center border border-gray-100 hover:shadow-xl cursor-pointer transition-all"
+      >
+      <p className="text-gray-500">Sent</p>
+      <p className="text-2xl font-bold text-green-600">{stats.sent}</p>
+      </motion.div>
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 300 }}
+        className="bg-gradient-to-br from-white to-pink-50 p-5 rounded-xl shadow-md flex-1 text-center border border-gray-100 hover:shadow-xl cursor-pointer transition-all"
+      >
+      <p className="text-gray-500">Received</p>
+      <p className="text-2xl font-bold text-pink-600">{stats.received}</p>
+     </motion.div>
+     </div>
+
+
 
       {/* Shoutouts */}
       {loading && <div className="text-center mt-6 text-gray-500">Loading...</div>}
@@ -174,71 +198,72 @@ export default function MyShoutOuts({ currentUser }) {
           animate={{ opacity: 1, y: 0 }}
         >
           {/* Header */}
-          <div className="flex justify-between items-start mb-3 relative">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {shout.giver_name?.charAt(0).toUpperCase() || "U"}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800">{shout.giver_name}</p>
-                <p className="text-gray-500 text-xs">
-                  {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
-                </p>
-              </div>
-            </div>
+      <div className="flex justify-between items-start mb-3 relative">
+        <div className="flex items-center space-x-3">
+        <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+          {shout.giver_name?.charAt(0).toUpperCase() || "U"}
+        </div>
+        <div>
+        <p className="font-semibold text-gray-800">{shout.giver_name}</p>
+        <p className="text-gray-500 text-xs">
+          {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
+        </p>
+       </div>
+      </div>
 
-            {shout.giver_id === currentUser.id && (
-              <div className="flex flex-col items-end relative">
-                <div className="text-gray-400 text-xs flex flex-col items-end">
-                  <span>
-                    Created: {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
-                  </span>
-                  {shout.edited_at && (
-                    <span className="text-violet-600">
-                      Edited: {dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}
-                    </span>
-                  )}
-                </div>
+    <div className="flex flex-col items-end relative">
+    {/* Always show created/edited times */}
+    <div className="text-gray-500 text-xs flex flex-col items-end">
+      <span>
+        Created: {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
+      </span>
+      {shout.edited_at && (
+        <span className="text-violet-600 italic">
+           Edited: {dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}
+        </span>
+      )}
+    </div>
 
-                <div className="relative mt-1">
-                  <button
-                    onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
-                    className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
-                  >
-                    ⋮
-                  </button>
+    {/* Show edit/delete only if logged-in user is the giver */}
+    {shout.giver_id === currentUser.id && (
+      <div className="relative mt-1">
+        <button
+          onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
+          className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
+        >
+          ⋮
+        </button>
 
-                  {openMenuId === shout.id && (
-                    <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
-                      <button
-                        onClick={() => {
-                          setEditingShoutoutId(shout.id);
-                          setOpenMenuId(null);
-                        }}
-                        className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
-                      >
-                        <Edit2 size={14} /> Edit
-                      </button>
-                      <button
-                        onClick={() => {
-                          deleteShoutout(shout.id);
-                          setOpenMenuId(null);
-                        }}
-                        className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
-                      >
-                        <Trash2 size={14} /> Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+        {openMenuId === shout.id && (
+          <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
+            <button
+              onClick={() => {
+                setEditingShoutoutId(shout.id);
+                setOpenMenuId(null);
+              }}
+              className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
+            >
+              <Edit2 size={14} /> Edit
+            </button>
+            <button
+              onClick={() => {
+                deleteShoutout(shout.id);
+                setOpenMenuId(null);
+              }}
+              className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
+            >
+              <Trash2 size={14} /> Delete
+            </button>
           </div>
-
+          )}
+          </div>
+       )}
+      </div>
+      </div> 
           {/* Receiver */}
           <div className="flex items-center mb-2">
             <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
-              To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
+             🎯 To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
             </span>
           </div>
 

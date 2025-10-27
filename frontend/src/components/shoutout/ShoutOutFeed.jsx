@@ -23,7 +23,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
   const departments = [
     "All Departments",
     "Engineering",
-    "HR",
+    "Human Resources",
     "Sales",
     "Marketing",
     "Finance",
@@ -131,6 +131,12 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
 
   return (
     <div className="p-4 flex flex-col space-y-6">
+      
+      <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 text-transparent bg-clip-text">
+        Shout-Out Feed
+      </h2>
+      <p className="text-gray-500 mb-6">Browse recognitions shared across the organization 💬</p>
+
       {/* Filters */}
       <motion.div
         className="bg-white p-5 rounded-3xl shadow-lg flex flex-wrap items-center gap-4 sticky top-4 z-10"
@@ -189,6 +195,25 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
         </motion.button>
       </motion.div>
 
+      {/* Total Shoutouts Count */}
+      <motion.div
+          className="flex justify-between items-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 rounded-xl shadow border border-gray-100"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+      >
+        <p className="text-gray-600 text-base font-medium">
+           Showing <span className="text-indigo-600 font-semibold">{filtered.length}</span>{" "}
+           shoutout{filtered.length !== 1 ? "s" : ""}{" "}
+           {senderDept !== "All Departments" ||
+           receiverDept !== "All Departments" ||
+           searchName.trim() !== "" ||
+           date !== ""
+             ? "based on your filters 🎯"
+             : "in total 🚀"}
+        </p>
+      </motion.div>
+
       {/* Feed */}
       {loading ? (
         <div className="text-center mt-6 text-gray-500">Loading feed...</div>
@@ -204,67 +229,71 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            {/* Header */}
-            <div className="flex justify-between items-start mb-3 relative">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  {shout.giver_name?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">{shout.giver_name}</p>
-                  <p className="text-gray-500 text-xs">
-                    {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
-                  </p>
-                </div>
-              </div>
-
-              {shout.giver_id === currentUser.id && (
-                <div className="flex flex-col items-end relative">
-                  <div className="text-gray-400 text-xs flex flex-col items-end">
-                    <span>
-                      Created: {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
-                    </span>
-                    {shout.edited_at && (
-                      <span className="text-violet-600">
-                        Edited: {dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="relative mt-1">
-                    <button
-                      onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
-                      className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
-                    >
-                      ⋮
-                    </button>
-
-                    {openMenuId === shout.id && (
-                      <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
-                        <button
-                          onClick={() => {
-                            setEditingShoutoutId(shout.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
-                        >
-                          <Edit2 size={14} /> Edit
-                        </button>
-                        <button
-                          onClick={() => {
-                            deleteShoutout(shout.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
-                        >
-                          <Trash2 size={14} /> Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+            
+          {/* Header */}
+          <div className="flex justify-between items-start mb-3 relative">
+           <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              {shout.giver_name?.charAt(0).toUpperCase() || "U"}
             </div>
+            <div>
+              <p className="font-semibold text-gray-800">{shout.giver_name}</p>
+              <p className="text-gray-500 text-xs">
+                {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
+              </p>
+            </div>
+          </div>
+
+          {/* Created & Edited timestamps - visible for all */}
+          <div className="flex flex-col items-end relative">
+            <div className="text-gray-500 text-xs flex flex-col items-end">
+            <span>
+              Created: {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
+            </span>
+             {shout.edited_at && (
+            <span className="text-violet-600 italic">
+              Edited: {dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}
+            </span>
+            )}
+           </div>
+
+          {/* Menu (Edit/Delete) */}
+          {shout.giver_id === currentUser.id && (
+          <div className="relative mt-1">
+            <button
+              onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
+              className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
+            >
+             ⋮
+            </button>
+
+           {openMenuId === shout.id && (
+              <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
+                  <button
+                    onClick={() => {
+                    setEditingShoutoutId(shout.id);
+                    setOpenMenuId(null);
+                    }}
+                    className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
+                  >
+                    <Edit2 size={14} /> Edit
+                  </button>
+                  <button
+                      onClick={() => {
+                      deleteShoutout(shout.id);
+                      setOpenMenuId(null);
+                      }}
+                      className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
+                  >
+                    <Trash2 size={14} /> Delete
+                  </button>
+              </div>
+            )}
+          </div>
+          )}
+        </div>
+        </div>
+
 
             {/* Receiver */}
             {shout.receiver_name && (

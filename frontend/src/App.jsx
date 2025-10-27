@@ -18,11 +18,12 @@ function App() {
     setUser(null);
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    localStorage.removeItem("dashboard_quote");
+
   };
 
   return (
     <>
-      {/* ✅ Place Toaster inside the JSX return */}
       <Toaster position="top-right" reverseOrder={false} />
 
       {!isAuthenticated ? (

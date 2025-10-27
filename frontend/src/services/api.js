@@ -179,14 +179,17 @@ class ApiService {
     return await res.json();
   }
 
-  // -------------------- UPDATE USER ACCOUNT --------------------
-  async updateUser(userId, updatedData) {
-    // updating user account
-    const res = await axios.put(`${API_BASE_URL}/users/${userId}`, updatedData, {
-      headers: { Authorization: `Bearer ${this.getToken()}` },
-    });
-    return res.data;
-  }
+// -------------------- UPDATE USER ACCOUNT --------------------
+async updateUser(userId, updatedData) {
+  const res = await axios.put(`${API_BASE_URL}/users/${userId}`, updatedData, {
+    headers: {
+      Authorization: `Bearer ${this.getToken()}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return res.data;
+}
+
 
   // -------------------- DELETE USER ACCOUNT --------------------
   async deleteUser(userId) {

@@ -62,7 +62,12 @@ class UserOut(BaseModel):
     model_config = {
         "from_attributes": True
     }
-
+    
+class UserUpdate(BaseModel):
+    username: Optional[str]
+    email: Optional[EmailStr]
+    department: Optional[str]
+    role: Optional[str]
 
 # ===== ShoutOut Schemas =====
 class ShoutOutCreate(BaseModel):

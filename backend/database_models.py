@@ -47,7 +47,7 @@ class ShoutOut(Base):
     is_public = Column(Enum("public", "department_only", "private", name="visibility_level"), default="public")
     created_at = Column(DateTime, default=datetime.utcnow)
     image_url = Column(String, nullable=True)   
-    edited_at = Column(DateTime, nullable=True)
+    edited_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
 
     # Relationships
     giver = relationship("User", foreign_keys=[giver_id], back_populates="given_shoutouts")
