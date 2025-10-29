@@ -120,3 +120,23 @@ class DepartmentStats(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+# ===== Reaction Schemas =====
+
+class ReactionBase(BaseModel):
+    reaction_type: str   # like, love, clap, celebrate, etc.
+
+
+class ReactionResponse(BaseModel):
+    id: int
+    user_id: int
+    reaction_type: str
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class AddReactionRequest(BaseModel):
+    reaction_type: str

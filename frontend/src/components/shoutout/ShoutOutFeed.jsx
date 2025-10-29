@@ -8,6 +8,17 @@ import EditShoutOut from "./EditShoutOut";
 
 dayjs.extend(utc);
 
+const REACTIONS = [
+  { type: "like", emoji: "👍" },
+  { type: "love", emoji: "❤️" },
+  { type: "clap", emoji: "👏" },
+  { type: "celebrate", emoji: "🎉" },
+  { type: "insightful", emoji: "💡" },
+  { type: "support", emoji: "🤝" },
+  { type: "star", emoji: "⭐" },
+
+];
+
 export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
   const [shoutouts, setShoutouts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +42,16 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
     "Design",
   ];
 
+
+  const fetchReactionCounts = async (shoutoutId) => {
+    try {
+      const res = await ApiService.get(`/reactions/${shoutoutId}`);
+      return res;
+    } catch {
+      return {};
+    }
+  };
+
   // Fetch shoutouts
   const fetchShoutouts = async () => {
     setLoading(true);
@@ -48,11 +69,23 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
         return bTime - aTime;
       });
 
+      for (let s of sorted) {
+        s.reactionCounts = await fetchReactionCounts(s.id);
+      }
       setShoutouts(sorted);
     } catch (err) {
       console.error("Failed to fetch shoutouts", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addReaction = async (shoutoutId, reaction) => {
+    try {
+      await ApiService.post(`/reactions/${shoutoutId}`, { reaction_type: reaction });
+      fetchShoutouts();
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -122,8 +155,6 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
             : s
         )
       );
-      toast.success("Shoutout deleted successfully!"); 
-
     } catch (err) {
       console.error("Delete shoutout failed:", err);
     }
@@ -343,6 +374,22 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
                 )}
               </>
             )}
+            {/* Reactions */}
+           <div className="flex flex-wrap items-center gap-3 mt-4">
+            {REACTIONS.map((r) => (
+            <button
+              key={r.type}
+              onClick={() => addReaction(shout.id, r.type)}
+              className="flex items-center gap-1 bg-white border rounded-full px-3 py-1 text-sm shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+            >
+              <span className="text-lg">{r.emoji}</span>
+                <span className="text-gray-700 font-medium">
+                  {shout.reactionCounts?.[r.type] || 0}
+                </span>
+            </button>
+            ))}
+            </div>
+
           </motion.div>
         ))
       )}
