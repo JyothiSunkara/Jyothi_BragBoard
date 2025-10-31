@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { motion } from "framer-motion";
 import EditShoutOut from "./EditShoutOut";
+import ReactionBar from "./ReactionBar";
 import ApiService from "../../services/api";
 
 dayjs.extend(utc);
@@ -83,7 +84,6 @@ export default function MyShoutOuts({ currentUser }) {
 
       // Remove deleted shoutout from the list
       setShoutouts(prev => prev.filter(s => s.id !== shoutId));
-      toast.success("Shoutout deleted successfully!"); 
 
     } catch (err) {
       console.error("Delete shoutout failed:", err);
@@ -224,40 +224,49 @@ export default function MyShoutOuts({ currentUser }) {
       )}
     </div>
 
-    {/* Show edit/delete only if logged-in user is the giver */}
-    {shout.giver_id === currentUser.id && (
-      <div className="relative mt-1">
+    {(shout.giver_id === currentUser.id || currentUser.role === "admin") && (
+  <div className="relative mt-1">
+    <button
+      onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
+      className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
+    >
+      ⋮
+    </button>
+
+    {openMenuId === shout.id && (
+      <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
+
+        {/* ✅ Show Edit ONLY if employee owns the shout */}
+        {shout.giver_id === currentUser.id && (
+          <button
+            onClick={() => {
+              setEditingShoutoutId(shout.id);
+              setOpenMenuId(null);
+            }}
+            className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
+          >
+            <Edit2 size={14} /> Edit
+          </button>
+        )}
+
+        {/* ✅ Show Delete for giver OR admin */}
         <button
-          onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
-          className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
+          onClick={() => {
+            deleteShoutout(shout.id);
+            setOpenMenuId(null);
+          }}
+          className={`px-4 py-2 text-left text-sm hover:bg-red-100 flex items-center gap-2 ${
+            shout.giver_id !== currentUser.id ? "rounded-xl" : "rounded-b-xl"
+          }`}
         >
-          ⋮
+          <Trash2 size={14} /> Delete
         </button>
 
-        {openMenuId === shout.id && (
-          <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
-            <button
-              onClick={() => {
-                setEditingShoutoutId(shout.id);
-                setOpenMenuId(null);
-              }}
-              className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
-            >
-              <Edit2 size={14} /> Edit
-            </button>
-            <button
-              onClick={() => {
-                deleteShoutout(shout.id);
-                setOpenMenuId(null);
-              }}
-              className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
-            >
-              <Trash2 size={14} /> Delete
-            </button>
-          </div>
-          )}
-          </div>
-       )}
+      </div>
+    )}
+  </div>
+)}
+
       </div>
       </div> 
           {/* Receiver */}
@@ -309,6 +318,11 @@ export default function MyShoutOuts({ currentUser }) {
               )}
             </>
           )}
+          {/* Reactions */}
+<div className="mt-4">
+<ReactionBar shoutout={shout} />
+</div>
+
         </motion.div>
       ))}
     </div>

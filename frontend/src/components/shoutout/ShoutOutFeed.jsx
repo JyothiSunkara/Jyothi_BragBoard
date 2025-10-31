@@ -1,30 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef} from "react";
 import { Edit2, Trash2, Filter, RotateCcw, TargetIcon } from "lucide-react";
 import ApiService from "../../services/api";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { motion } from "framer-motion";
 import EditShoutOut from "./EditShoutOut";
+import ReactionBar from "./ReactionBar";
 
 dayjs.extend(utc);
-
-const REACTIONS = [
-  { type: "like", emoji: "👍" },
-  { type: "love", emoji: "❤️" },
-  { type: "clap", emoji: "👏" },
-  { type: "celebrate", emoji: "🎉" },
-  { type: "insightful", emoji: "💡" },
-  { type: "support", emoji: "🤝" },
-  { type: "star", emoji: "⭐" },
-
-];
 
 export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
   const [shoutouts, setShoutouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtered, setFiltered] = useState([]);
   const [editingShoutoutId, setEditingShoutoutId] = useState(null);
-  const [allUsers, setAllUsers] = useState([]);
   const [senderDept, setSenderDept] = useState("All Departments");
   const [receiverDept, setReceiverDept] = useState("All Departments");
   const [searchName, setSearchName] = useState("");
@@ -41,27 +30,32 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
     "Operations",
     "Design",
   ];
+  
+  const menuRef = useRef(null);
 
-
-  const fetchReactionCounts = async (shoutoutId) => {
-    try {
-      const res = await ApiService.get(`/reactions/${shoutoutId}`);
-      return res;
-    } catch {
-      return {};
-    }
-  };
-
-  // Fetch shoutouts
+  // Fetch shoutouts and remove deleted ones
   const fetchShoutouts = async () => {
     setLoading(true);
     try {
       const res = await ApiService.getShoutouts();
-      const visible = res.filter(
-        (s) =>
-          (s.is_public || s.giver_id === currentUser.id || s.receiver_id === currentUser.id) &&
-          s.message !== "This shoutout was deleted"
-      );
+
+      //  Remove deleted shoutouts
+      const clean = res.filter(s => !s.is_deleted);
+
+      const visible = clean.filter((s) => {
+        if (s.is_public === "public") return true;
+        if (
+          s.is_public === "private" &&
+          (s.giver_id === currentUser.id || s.receiver_id === currentUser.id)
+        )
+          return true;
+        if (
+          s.is_public === "department_only" &&
+          s.giver_department === currentUser.department
+        )
+          return true;
+        return false;
+      });
 
       const sorted = visible.sort((a, b) => {
         const aTime = new Date(a.edited_at || a.created_at);
@@ -69,9 +63,6 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
         return bTime - aTime;
       });
 
-      for (let s of sorted) {
-        s.reactionCounts = await fetchReactionCounts(s.id);
-      }
       setShoutouts(sorted);
     } catch (err) {
       console.error("Failed to fetch shoutouts", err);
@@ -80,28 +71,8 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
     }
   };
 
-  const addReaction = async (shoutoutId, reaction) => {
-    try {
-      await ApiService.post(`/reactions/${shoutoutId}`, { reaction_type: reaction });
-      fetchShoutouts();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // Fetch all users
-  const fetchAllUsers = async () => {
-    try {
-      const res = await ApiService.getUsers();
-      setAllUsers(res);
-    } catch (err) {
-      console.error("Failed to fetch users", err);
-    }
-  };
-
   useEffect(() => {
     fetchShoutouts();
-    fetchAllUsers();
   }, []);
 
   useEffect(() => {
@@ -144,17 +115,13 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
     setDate("");
   };
 
+  // Delete shoutout completely from UI
   const deleteShoutout = async (shoutId) => {
     if (!confirm("Are you sure you want to delete this shoutout?")) return;
     try {
       await ApiService.deleteShoutout(shoutId);
-      setShoutouts(prev =>
-        prev.map(s =>
-          s.id === shoutId
-            ? { ...s, message: "This shoutout was deleted", image_url: null, tagged_users: [] }
-            : s
-        )
-      );
+
+      setShoutouts((prev) => prev.filter((s) => s.id !== shoutId));
     } catch (err) {
       console.error("Delete shoutout failed:", err);
     }
@@ -175,6 +142,8 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
         animate={{ opacity: 1, y: 0 }}
       >
         <Filter className="text-gray-600" size={20} />
+
+        {/* Sender Filter */}
         <div className="flex items-center space-x-2 min-w-[200px]">
           <label className="text-sm font-medium text-gray-700">Sender:</label>
           <select
@@ -188,6 +157,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
           </select>
         </div>
 
+        {/* Receiver Filter */}
         <div className="flex items-center space-x-2 min-w-[200px]">
           <label className="text-sm font-medium text-gray-700">Receiver:</label>
           <select
@@ -201,6 +171,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
           </select>
         </div>
 
+        {/* Search */}
         <input
           type="text"
           placeholder="Search by sender or receiver"
@@ -209,6 +180,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
           className="flex-1 min-w-[250px] border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
         />
 
+        {/* Date Filter */}
         <input
           type="date"
           value={date}
@@ -216,6 +188,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
           className="border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
         />
 
+        {/* Clear Filters */}
         <motion.button
           onClick={clearFilters}
           whileHover={{ scale: 1.05 }}
@@ -226,7 +199,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
         </motion.button>
       </motion.div>
 
-      {/* Total Shoutouts Count */}
+      {/* Count */}
       <motion.div
           className="flex justify-between items-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 rounded-xl shadow border border-gray-100"
           initial={{ opacity: 0, y: -10 }}
@@ -261,70 +234,80 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
             animate={{ opacity: 1, y: 0 }}
           >
             
-          {/* Header */}
-          <div className="flex justify-between items-start mb-3 relative">
-           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-              {shout.giver_name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800">{shout.giver_name}</p>
-              <p className="text-gray-500 text-xs">
-                {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
-              </p>
-            </div>
-          </div>
-
-          {/* Created & Edited timestamps - visible for all */}
-          <div className="flex flex-col items-end relative">
-            <div className="text-gray-500 text-xs flex flex-col items-end">
-            <span>
-              Created: {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
-            </span>
-             {shout.edited_at && (
-            <span className="text-violet-600 italic">
-              Edited: {dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}
-            </span>
-            )}
-           </div>
-
-          {/* Menu (Edit/Delete) */}
-          {shout.giver_id === currentUser.id && (
-          <div className="relative mt-1">
-            <button
-              onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
-              className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
-            >
-             ⋮
-            </button>
-
-           {openMenuId === shout.id && (
-              <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
-                  <button
-                    onClick={() => {
-                    setEditingShoutoutId(shout.id);
-                    setOpenMenuId(null);
-                    }}
-                    className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
-                  >
-                    <Edit2 size={14} /> Edit
-                  </button>
-                  <button
-                      onClick={() => {
-                      deleteShoutout(shout.id);
-                      setOpenMenuId(null);
-                      }}
-                      className="px-4 py-2 text-left text-sm hover:bg-red-100 rounded-b-xl flex items-center gap-2"
-                  >
-                    <Trash2 size={14} /> Delete
-                  </button>
+            {/* Header */}
+            <div className="flex justify-between items-start mb-3 relative">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                  {shout.giver_name?.charAt(0).toUpperCase() || "U"}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">{shout.giver_name}</p>
+                  <p className="text-gray-500 text-xs">
+                    {`${shout.giver_department || "N/A"} | ${shout.giver_role || "N/A"}`}
+                  </p>
+                </div>
               </div>
-            )}
-          </div>
-          )}
-        </div>
-        </div>
 
+              {/* Created & Edited timestamps */}
+              <div className="flex flex-col items-end relative">
+                <div className="text-gray-500 text-xs flex flex-col items-end">
+                  <span>
+                    Created: {dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
+                  </span>
+                  {shout.edited_at && (
+                    <span className="text-violet-600 italic">
+                      Edited: {dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}
+                    </span>
+                  )}
+                </div>
+
+                {/* Menu (Edit/Delete) */}
+                {/* Show menu for giver OR admin */}
+{(shout.giver_id === currentUser.id || currentUser.role === "admin") && (
+  <div className="relative mt-1">
+    <button
+      onClick={() => setOpenMenuId(openMenuId === shout.id ? null : shout.id)}
+      className="text-gray-500 hover:text-gray-800 text-xl font-bold focus:outline-none"
+    >
+      ⋮
+    </button>
+
+    {openMenuId === shout.id && (
+      <div className="absolute right-0 mt-2 w-32 bg-white border rounded-xl shadow-lg flex flex-col z-20">
+
+        {/* Allow Edit ONLY if user is the giver */}
+        {shout.giver_id === currentUser.id && (
+          <button
+            onClick={() => {
+              setEditingShoutoutId(shout.id);
+              setOpenMenuId(null);
+            }}
+            className="px-4 py-2 text-left text-sm hover:bg-blue-100 rounded-t-xl flex items-center gap-2"
+          >
+            <Edit2 size={14} /> Edit
+          </button>
+        )}
+
+        {/* Delete visible to Admin OR Giver */}
+        <button
+          onClick={() => {
+            deleteShoutout(shout.id);
+            setOpenMenuId(null);
+          }}
+          className={`px-4 py-2 text-left text-sm flex items-center gap-2 ${
+            shout.giver_id !== currentUser.id ? "rounded-t-xl" : "rounded-b-xl"
+          }`}
+        >
+          <Trash2 size={14} /> Delete
+        </button>
+
+      </div>
+    )}
+  </div>
+)}
+
+              </div>
+            </div>
 
             {/* Receiver */}
             {shout.receiver_name && (
@@ -365,7 +348,10 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
                 {shout.tagged_users?.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {shout.tagged_users.map((u) => (
-                      <div key={u.id} className="flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-purple-100">
+                      <div
+                        key={u.id}
+                        className="flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-purple-100"
+                      >
                         <TargetIcon size={12} className="mr-1 text-gray-700" />
                         {u.username}
                       </div>
@@ -374,22 +360,11 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
                 )}
               </>
             )}
-            {/* Reactions */}
-           <div className="flex flex-wrap items-center gap-3 mt-4">
-            {REACTIONS.map((r) => (
-            <button
-              key={r.type}
-              onClick={() => addReaction(shout.id, r.type)}
-              className="flex items-center gap-1 bg-white border rounded-full px-3 py-1 text-sm shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
-            >
-              <span className="text-lg">{r.emoji}</span>
-                <span className="text-gray-700 font-medium">
-                  {shout.reactionCounts?.[r.type] || 0}
-                </span>
-            </button>
-            ))}
-            </div>
 
+            {/* Reactions */}
+            <div className="mt-4">
+              <ReactionBar shoutout={shout} />
+            </div>
           </motion.div>
         ))
       )}

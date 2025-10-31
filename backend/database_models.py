@@ -53,6 +53,7 @@ class ShoutOut(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     image_url = Column(String, nullable=True)   
     edited_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
+    is_deleted = Column(Boolean, default=False)
 
     # Relationships
     giver = relationship("User", foreign_keys=[giver_id], back_populates="given_shoutouts")
