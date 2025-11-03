@@ -80,30 +80,30 @@ const ReactionBar = ({ shoutout }) => {
     setLoading(false);
   };
 
-  const fetchReactedUsers = async (type) => {
+  const fetchReactedUsers = async () => {
     try {
       const data = await ApiService.getReactedUsers(shoutout.id);
       setReactedUsers(data);
-      setShowPopup((prev) => (prev === type ? null : type));
     } catch (err) {
       console.error("Error fetching reacted users:", err);
     }
   };
+  
 
   useEffect(() => {
     fetchReactions();
   }, [shoutout.id]);
 
   return (
-    <div className="relative flex gap-3 mt-2 flex-wrap">
-      {emojiOptions.map(({ type, emoji, label }) => {
+    <div className="relative flex gap-3 mt-2 flex-wrap overflow-visible">
+    {emojiOptions.map(({ type, emoji, label }) => {
         const active = reactions.my_reaction === type;
         const count = reactions[type] || 0;
         const users = reactedUsers[type] || [];
 
         return (
-          <div key={type} className="relative group">
-            <motion.button
+<div key={type} className="relative group" ref={showPopup === type ? popupRef : null}>
+<motion.button
               onClick={() => handleReaction(type)}
               whileTap={{ scale: 1.35 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -118,13 +118,20 @@ const ReactionBar = ({ shoutout }) => {
             >
               <span className="text-lg">{emoji}</span>
 
-              {/* count (no underline) */}
+              {/* count */}
               <span
                 className="text-sm cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  fetchReactedUsers(type);
+                
+                  if (showPopup === type) {
+                    setShowPopup(null); // close popup
+                  } else {
+                    fetchReactedUsers(type); // fetch only when opening
+                    setShowPopup(type);
+                  }
                 }}
+                
               >
                 {count}
               </span>
@@ -139,22 +146,21 @@ const ReactionBar = ({ shoutout }) => {
               {label}
             </div>
 
-            {/* Popup */}
-            {showPopup === type && users.length > 0 && (
-              <div
-                ref={popupRef}
-                className="absolute bg-white border border-gray-200 shadow-md rounded-md p-2 mt-1 w-64 z-20"
-              >
-                {users.map((user, i) => (
-                  <div key={i} className="py-1 text-sm">
-                    <strong>{user.username}</strong>
-                    {user.department || user.role ? (
-                      <> | {user.department || "N/A"} | {user.role || "N/A"}</>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            )}
+           {showPopup === type && users.length > 0 && (
+  <div
+    className="bg-gray-50 border border-gray-300 rounded-lg p-2 w-full mt-2 shadow-sm"
+  >
+    {users.map((user, i) => (
+      <div key={i} className="py-1 text-sm last:border-none">
+        <strong>{user.username}</strong>
+        {user.department || user.role ? (
+          <> | {user.department || "N/A"} | {user.role || "N/A"}</>
+        ) : null}
+      </div>
+    ))}
+  </div>
+)}
+
           </div>
         );
       })}

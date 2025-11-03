@@ -101,8 +101,10 @@ export default function MyShoutOuts({ currentUser }) {
 
       {/* Filters */}
       <motion.div
-        className="bg-white p-5 rounded-3xl shadow-lg flex flex-wrap items-center gap-4 sticky top-4 z-10"
-        initial={{ opacity: 0, y: -10 }}
+className="
+bg-white/70 backdrop-blur-md border border-gray-200
+rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
+"        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center space-x-2 min-w-[200px]">
@@ -193,7 +195,11 @@ export default function MyShoutOuts({ currentUser }) {
       {shoutouts.map((shout) => (
         <motion.div
           key={shout.id}
-          className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-2xl shadow hover:shadow-xl transition-all duration-200 relative"
+          className=" 
+          relative overflow-visible z-20
+          bg-white/80 backdrop-blur-lg border border-gray-200
+          rounded-3xl p-6 shadow-sm hover:shadow-md transition-all
+          "
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -236,7 +242,6 @@ export default function MyShoutOuts({ currentUser }) {
     {openMenuId === shout.id && (
       <div className="absolute right-0 mt-2 w-28 bg-white border rounded-xl shadow-lg flex flex-col z-20">
 
-        {/* ✅ Show Edit ONLY if employee owns the shout */}
         {shout.giver_id === currentUser.id && (
           <button
             onClick={() => {
@@ -249,7 +254,7 @@ export default function MyShoutOuts({ currentUser }) {
           </button>
         )}
 
-        {/* ✅ Show Delete for giver OR admin */}
+        {/*   Delete for giver OR admin */}
         <button
           onClick={() => {
             deleteShoutout(shout.id);
@@ -271,8 +276,8 @@ export default function MyShoutOuts({ currentUser }) {
       </div> 
           {/* Receiver */}
           <div className="flex items-center mb-2">
-            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
-             🎯 To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
+          <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full text-xs font-semibold">
+          🎯 To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
             </span>
           </div>
 

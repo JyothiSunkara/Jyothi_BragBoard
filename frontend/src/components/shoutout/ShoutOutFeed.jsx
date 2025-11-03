@@ -128,8 +128,20 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
   };
 
   return (
-    <div className="p-4 flex flex-col space-y-6">
+<div className="p-4 flex flex-col space-y-6 relative overflow-visible">
       
+{/* Welcome Header with Gradient Text Only */}
+<div className="p-2">
+<h1 className="text-3xl font-extrabold bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent">
+  Welcome, {currentUser?.username || "User"}! 👋
+</h1>
+  <p className="text-gray-600 text-sm mt-1">
+    Take a moment to appreciate your teammates. Spread positivity ✨
+  </p>
+</div>
+
+
+
       <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 text-transparent bg-clip-text">
         Shout-Out Feed
       </h2>
@@ -137,7 +149,12 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
 
       {/* Filters */}
       <motion.div
-        className="bg-white p-5 rounded-3xl shadow-lg flex flex-wrap items-center gap-4 sticky top-4 z-10"
+className="
+bg-white/70 backdrop-blur-md border border-gray-200
+rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
+relative overflow-visible z-20
+"
+
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -177,7 +194,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
           placeholder="Search by sender or receiver"
           value={searchName}
           onChange={(e) => setSearchName(e.target.value)}
-          className="flex-1 min-w-[250px] border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
+          className="flex-1 min-w-[200px] border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
         />
 
         {/* Date Filter */}
@@ -229,7 +246,10 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
         filtered.map((shout) => (
           <motion.div
             key={shout.id}
-            className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-2xl shadow hover:shadow-xl transition-all duration-200 relative"
+            className="
+            bg-white/80 backdrop-blur-lg border border-gray-200
+            rounded-3xl p-6 shadow-sm hover:shadow-md transition-all
+            overflow-visible relative "
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -312,8 +332,8 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
             {/* Receiver */}
             {shout.receiver_name && (
               <div className="flex items-center mb-2">
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
-                  To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
+<span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full text-xs font-semibold">
+To: {shout.receiver_name} | {shout.receiver_department || "N/A"} | {shout.receiver_role || "N/A"}
                 </span>
               </div>
             )}
