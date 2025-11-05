@@ -6,7 +6,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 import shutil, uuid, os
 from database import get_db
-from database_models import ShoutOut, User, ShoutOutTag, ShoutOutReaction
+from database_models import ShoutOut, User, ShoutOutTag, ShoutOutReaction, Comment, ShoutOutReport
 from auth import get_current_user
 from schemas import UserOut, ShoutOutCreate, ShoutOutResponse, ShoutOutUpdate, VisibilityEnum
 
@@ -300,6 +300,12 @@ def get_shoutouts_feed(
     results = []
     for s in shoutouts:
 
+        comment_count = (
+           db.query(func.count(Comment.id))
+           .filter(Comment.shoutout_id == s.id)
+           .scalar()
+        )
+
         reactions = (
            db.query(ShoutOutReaction, User)
            .join(User, ShoutOutReaction.user_id == User.id)
@@ -347,7 +353,8 @@ def get_shoutouts_feed(
                 created_at=s.created_at,
                 edited_at=s.edited_at,
                 image_url=image_url,
-                reactions=reactions_list
+                reactions=reactions_list,
+                comment_count=comment_count
             ))
 
     return results
@@ -360,13 +367,21 @@ def get_my_shoutouts(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Base query - only include non-deleted shoutouts
-    query = db.query(ShoutOut).filter(
-        or_(
-            ShoutOut.giver_id == current_user.id,
-            ShoutOut.receiver_id == current_user.id
-        ),
-        ShoutOut.is_deleted == False
+    # Base query - only include non-deleted shoutouts + count comments
+    query = (
+        db.query(
+            ShoutOut,
+            func.count(Comment.id).label("comment_count")   # ✅ count comments
+        )
+        .outerjoin(Comment, Comment.shoutout_id == ShoutOut.id)
+        .filter(
+            or_(
+                ShoutOut.giver_id == current_user.id,
+                ShoutOut.receiver_id == current_user.id
+            ),
+            ShoutOut.is_deleted == False
+        )
+        .group_by(ShoutOut.id)
     )
 
     # Apply department filter
@@ -378,13 +393,15 @@ def get_my_shoutouts(
         cutoff = datetime.utcnow() - timedelta(days=days)
         query = query.filter(ShoutOut.created_at >= cutoff)
 
-    # Fetch shoutouts
-    shoutouts = query.order_by(ShoutOut.created_at.desc()).all()
+    # Fetch shoutouts sorted by edited or created date
+    shoutouts = query.order_by(
+        func.coalesce(ShoutOut.edited_at, ShoutOut.created_at).desc()
+    ).all()
 
-    # Format results
     result = []
-    for s in shoutouts:
+    for s, comment_count in shoutouts:
 
+        # Reactions
         reactions = db.query(ShoutOutReaction).filter(
             ShoutOutReaction.shoutout_id == s.id
         ).all()
@@ -394,6 +411,7 @@ def get_my_shoutouts(
             reaction_counts[r.reaction_type] = reaction_counts.get(r.reaction_type, 0) + 1
 
         my_reaction = next((r.reaction_type for r in reactions if r.user_id == current_user.id), None)
+
         tagged_users = [UserOut.model_validate(t.tagged_user) for t in s.tags]
         image_url = f"http://127.0.0.1:8000{s.image_url}" if s.image_url else None
 
@@ -415,15 +433,16 @@ def get_my_shoutouts(
             "edited_at": s.edited_at,
             "image_url": image_url,
             "tagged_users": tagged_users,
+            "comment_count": comment_count,   # ✅ send comment count to frontend
 
             "reactions": reaction_counts,
             "my_reaction": my_reaction
         })
 
     return {
-        "total": len(shoutouts),
-        "sent": sum(1 for s in shoutouts if s.giver_id == current_user.id),
-        "received": sum(1 for s in shoutouts if s.receiver_id == current_user.id),
+        "total": len(result),
+        "sent": sum(1 for s, _ in shoutouts if s.giver_id == current_user.id),
+        "received": sum(1 for s, _ in shoutouts if s.receiver_id == current_user.id),
         "shoutouts": result
     }
 
@@ -443,3 +462,11 @@ def search_users_by_department(
     users = query.limit(20).all()
 
     return [UserOut.model_validate(user) for user in users]
+
+
+@router.post("/report/{shoutout_id}")
+def report_shoutout(shoutout_id: int, reason: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    report = ShoutOutReport(shoutout_id=shoutout_id, reporter_id=current_user.id, reason=reason)
+    db.add(report)
+    db.commit()
+    return {"message": "Report submitted"}

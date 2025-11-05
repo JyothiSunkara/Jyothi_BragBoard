@@ -2,6 +2,7 @@ import DashboardContent from "../dashboard/DashboardContent";
 import ShoutOutFeed from "../shoutout/ShoutOutFeed";
 import ShoutOutForm from "../shoutout/ShoutOutForm";
 import MyShoutOuts from "../shoutout/MyShoutOuts";
+import AdminDashboard from "../admin/AdminDashboard";
 import Settings from "./Settings"; 
 
 const MainContent = ({ activeView, user, shoutouts, handleDeleteShout, shoutoutUpdated, handleShoutoutPosted }) => {
@@ -32,6 +33,10 @@ const MainContent = ({ activeView, user, shoutouts, handleDeleteShout, shoutoutU
       );
     case "settings":
       return <Settings currentUser={user} />
+
+    case "admin-dashboard":
+        return <AdminDashboard />; 
+        
     default:
       return <div className="text-gray-500">Coming soon...</div>;
   }

@@ -134,33 +134,48 @@ class ApiService {
     );
     return res.data;
   }
-  
-  // -------------------- COMMENTS --------------------
-  async addComment(shoutout_id, { user_id, text }) {
-    const res = await axios.post(
-      `${API_BASE_URL}/shoutouts/${shoutout_id}/comments`,
-      { user_id, text },
-      { headers: this.getHeaders() }
-    );
-    return res.data;
-  }
+// --------------------- COMMENTS -------------------------
+async getComments(shoutoutId) {
+  const res = await fetch(`${API_BASE_URL}/comments/${shoutoutId}`, {
+    headers: this.getHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch comments");
+  return res.json();
+}
 
-  async deleteComment(comment_id) {
-    const res = await axios.delete(`${API_BASE_URL}/shoutouts/comments/${comment_id}`, {
-      headers: this.getHeaders(),
-    });
-    return res.data;
-  }
+async addComment(shoutoutId, content) {
+  const res = await fetch(`${API_BASE_URL}/comments/${shoutoutId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...this.getHeaders(),
+    },
+    body: JSON.stringify({ content }),
+  });
+  if (!res.ok) throw new Error("Failed to add comment");
+  return res.json();
+}
 
-  async updateComment(shoutout_id, comment_id, { text }) {
-    const res = await axios.put(
-      `${API_BASE_URL}/shoutouts/${shoutout_id}/comments/${comment_id}`,
-      { text },
-      { headers: this.getHeaders() }
-    );
-    return res.data;
-  }
-    
+async deleteComment(comment_id) {
+  const res = await fetch(`${API_BASE_URL}/comments/${comment_id}`, {
+    method: "DELETE",
+    headers: this.getHeaders(),
+  });
+  return res.json();
+}
+
+async updateComment(commentId, content) {
+  return fetch(`${API_BASE_URL}/comments/${commentId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...this.getHeaders(),
+    },
+    body: JSON.stringify({ content }),
+  }).then((res) => res.json());
+}
+
+
   // -------------------- UPDATING SHOUTOUT --------------------
   async updateShoutout(shoutout_id, data) {
     const res = await axios.put(`${API_BASE_URL}/shoutouts/${shoutout_id}`, data, {
@@ -206,6 +221,62 @@ async updateUser(userId, updatedData) {
     });
     return res.data;
   }
-}
 
+
+  // -------------------- ADMIN DASHBOARD --------------------
+
+  async getTopContributors() {
+    const res = await axios.get(`${API_BASE_URL}/admin/top-contributors`, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }
+
+  async getMostTagged() {
+    const res = await axios.get(`${API_BASE_URL}/admin/most-tagged`, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }
+
+  // -------------------- REPORT MANAGEMENT --------------------
+  async reportShoutout(shoutout_id, reason) {
+    const res = await axios.post(
+      `${API_BASE_URL}/shoutouts/report/${shoutout_id}?reason=${encodeURIComponent(reason)}`,
+      {},
+      { headers: this.getHeaders() }
+    );
+    return res.data;
+  }
+
+  async getReports() {
+    const res = await axios.get(`${API_BASE_URL}/admin/reports`, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }
+
+  async resolveReport(report_id) {
+    const res = await axios.put(`${API_BASE_URL}/admin/resolve/${report_id}`, {}, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }
+
+  // -------------------- ADMIN DELETES --------------------
+  async adminDeleteShoutout(shoutout_id) {
+    const res = await axios.delete(`${API_BASE_URL}/admin/shoutout/${shoutout_id}`, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }
+
+  async adminDeleteComment(comment_id) {
+    const res = await axios.delete(`${API_BASE_URL}/admin/comment/${comment_id}`, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }
+
+}
 export default new ApiService();

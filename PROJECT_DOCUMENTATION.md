@@ -209,4 +209,46 @@ POST /login → User authentication and JWT generation<br>
 **Output**<br><br>
 -Each shout-out now displays total reactions per type<br>
 -Users can interact and appreciate posts more meaningfully<br>
--Reaction data is maintained per user, ensuring accurate counts<br>
+-Reaction data is maintained per user, ensuring accurate counts<br><br>
+
+**Week 6 – Commenting System Implementation**<br><br>
+**Tasks Completed**<br>
+-Added the ability for users to comment on shout-outs<br>
+-Created a dedicated comments API with CRUD functionality<br>
+-Displayed comments under each shout-out in both Feed and My Shout-Outs<br>
+-Included comment counts and show/hide comments toggle<br>
+-Designed comment UI with username, avatar initial, and timestamps<br>
+-Allowed users to edit/delete only their own comments (admin can delete any)<br><br>
+
+**Implementation Details**<br>
+-Created a new Comment model in backend with fields:<br>
+id, shoutout_id, user_id, content, created_at, edited_at
+-Added routes in /comments:
+<br>
+• POST → Add comment
+• GET → Retrieve comments for a shout-out
+• PUT → Edit a comment
+• DELETE → Delete a comment
+-Joined Comment with User model to display:<br>
+username, department, role in the frontend UI
+-Built CommentSection.jsx component in frontend to:
+<br>
+• Fetch comments dynamically
+• Render comments inside the expanded area
+• Show updated counts immediately after adding or removing a comment
+-Added a View Comments (X) toggle to expand/collapse comment list without affecting other shout-out cards
+-Ensured UI layout matches existing shout-out card styling<br><br>
+
+**Output**<br>
+-Users can now engage in discussions through comments<br>
+-Comments are correctly associated with users and shout-outs<br>
+-Comment list opens smoothly below each post<br>
+-Comment count updates in real-time<br>
+-Edit/Delete options show only when allowed (self-comment or admin)<br><br>
+
+
+
+
+
+
+

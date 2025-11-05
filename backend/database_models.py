@@ -88,3 +88,32 @@ class ShoutOutReaction(Base):
     __table_args__ = (
     UniqueConstraint("shoutout_id", "user_id", name="unique_user_shoutout_reaction"),
     )
+
+class ShoutOutReport(Base):
+    __tablename__ = "shoutout_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shoutout_id = Column(Integer, ForeignKey("shoutouts.id"))
+    reporter_id = Column(Integer, ForeignKey("users.id"))
+    reason = Column(String, nullable=False)
+    status = Column(String, default="pending")  # pending / resolved
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    reporter = relationship("User")
+    shoutout = relationship("ShoutOut")
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shoutout_id = Column(Integer, ForeignKey("shoutouts.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    edited_at = Column(DateTime, onupdate=datetime.utcnow)
+    is_deleted = Column(Boolean, default=False)
+
+    # Relationships
+    user = relationship("User", backref="comments")
+    shoutout = relationship("ShoutOut", backref="comments")
+
