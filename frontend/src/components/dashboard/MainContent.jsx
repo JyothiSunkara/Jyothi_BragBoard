@@ -1,4 +1,3 @@
-import DashboardContent from "../dashboard/DashboardContent";
 import ShoutOutFeed from "../shoutout/ShoutOutFeed";
 import ShoutOutForm from "../shoutout/ShoutOutForm";
 import MyShoutOuts from "../shoutout/MyShoutOuts";
@@ -10,8 +9,6 @@ import Leaderboard from "./Leaderboard";
 
 const MainContent = ({ activeView, user, shoutouts, handleDeleteShout, shoutoutUpdated, handleShoutoutPosted }) => {
   switch (activeView) {
-    case "dashboard":
-      return <DashboardContent currentUser={user} />;
     case "feed":
       return (
         <ShoutOutFeed

@@ -21,8 +21,6 @@ const Sidebar = ({ activeView, setActiveView, userRole }) => {
     { id: "my-shoutouts", name: "My Shout-Outs", icon: <UserCircle size={20} /> },
     { id: "achievements", name: "Achievements", icon: <Award size={20} /> },
     { id: "leaderboard", name: "Leaderboard", icon: <Trophy size={20} /> },
-    { id: "dashboard", name: "Insights Dashboard", icon: <Home size={20} /> },
-
   ];
 
   const settingsItem = { id: "settings", name: "Settings", icon: <Settings size={20} /> };

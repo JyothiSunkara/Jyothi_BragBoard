@@ -182,7 +182,9 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Donut: Top Departments */}
         <div className="bg-white rounded-2xl shadow-sm p-6 lg:col-span-1">
-          <h2 className="text-lg font-semibold mb-4">Top Departments</h2>
+          <h2 className="text-xl font-semibold mb-5 bg-gradient-to-r from-indigo-600 to-blue-500 text-transparent bg-clip-text">
+              Top Departments
+          </h2>
           {stats.topDepartments.length ? (
             <div className="flex flex-col lg:flex-row items-center gap-6">
               <div style={{ width: 220, height: 220 }}>
@@ -211,9 +213,9 @@ export default function AdminDashboard() {
                     <li key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="w-3 h-3 rounded-full" style={{ background: DEPT_COLORS[i % DEPT_COLORS.length] }}></span>
-                        <span className="text-sm font-medium text-gray-700">{d.department}</span>
+                        <span className="text-sm font-medium text-gray-700">{d.department} </span>
                       </div>
-                      <span className="text-gray-800 font-semibold">{d.shoutout_count}</span>
+                      <span className="pl-1 text-gray-800 font-semibold"> {d.shoutout_count}</span>
                     </li>
                   ))}
                 </ul>
@@ -226,8 +228,10 @@ export default function AdminDashboard() {
 
         {/* Activity Trend: last 30 days (bar chart) */}
         <div className="bg-white rounded-2xl shadow-sm p-6 lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4">Shoutouts — Last 30 days</h2>
-          {stats.activityTrend.length ? (
+            <h2 className="text-xl font-semibold mb-5 bg-gradient-to-r from-indigo-600 to-blue-500 text-transparent bg-clip-text">
+                Shoutouts — Last 30 days
+            </h2>
+            {stats.activityTrend.length ? (
             <div style={{ width: "100%", height: 240 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.activityTrend} margin={{ top: 6, right: 8, left: 0, bottom: 6 }}>
@@ -246,7 +250,9 @@ export default function AdminDashboard() {
 
       {/* Top Contributors */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold mb-4">Top Contributors</h2>
+          <h2 className="text-xl font-semibold mb-5 bg-gradient-to-r from-indigo-600 to-blue-500 text-transparent bg-clip-text">
+              Top Contributors
+          </h2>
         {stats.topContributors.length ? (
           <ResponsiveContainer width="100%" height={220}>
           <BarChart data={stats.topContributors.slice(0, 5)} layout="vertical" margin={{ left: 40 }}>
@@ -265,24 +271,41 @@ export default function AdminDashboard() {
       </div>
 
       {/* Most Tagged Users */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold mb-4">Most Tagged Users</h2>
-        {stats.mostTaggedUsers.length ? (
-          <ul className="space-y-2">
-            {stats.mostTaggedUsers.map((u, i) => (
-              <li key={i} className="p-3 rounded-lg bg-gray-50 flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-gray-800">{u.username}</div>
-                  <div className="text-xs text-gray-500">Tagged {u.tag_count} times</div>
-                </div>
-                <div className="text-indigo-600 font-semibold">{u.tag_count}</div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No tagged users yet</p>
-        )}
-      </div>
+<div className="bg-white rounded-2xl shadow-sm p-6">
+  <h2 className="text-xl font-semibold mb-5 bg-gradient-to-r from-pink-600 to-rose-500 text-transparent bg-clip-text">
+    Most Tagged Users
+  </h2>
+
+  {stats.mostTaggedUsers.length ? (
+    <ul className="space-y-3">
+      {stats.mostTaggedUsers.map((u, i) => (
+        <li
+          key={i}
+          className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-md transition"
+        >
+          <div className="flex items-center gap-3">
+            {/* Rank Circle */}
+            <span className="w-8 h-8 flex items-center justify-center text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700">
+              {i + 1}
+            </span>
+
+            <div>
+              <p className="font-medium text-gray-800 capitalize">{u.username}</p>
+              <p className="text-xs text-gray-500">Tagged {u.tag_count} times</p>
+            </div>
+          </div>
+
+          <span className="font-semibold text-indigo-600 text-lg">
+            {u.tag_count}
+          </span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p className="text-gray-500">No tagged users yet</p>
+  )}
+</div>
+
     </div>
     
   );

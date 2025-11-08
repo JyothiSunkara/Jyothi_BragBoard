@@ -268,7 +268,7 @@ relative overflow-visible z-20
   {/* Top Header */}
   <div className="flex justify-between items-start">
     <div className="flex gap-3">
-      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white font-semibold">
         {shout.giver_name?.charAt(0).toUpperCase()}
       </div>
 

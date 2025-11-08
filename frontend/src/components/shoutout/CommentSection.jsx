@@ -22,7 +22,7 @@ export default function CommentSection({ shoutoutId, currentUser, onCommentCount
     try {
       const res = await ApiService.getComments(shoutoutId);
       const visible = res.filter(c => !c.is_deleted)
-                         .sort((a, b) => new Date(b.edited_at || b.created_at) - new Date(a.edited_at || a.created_at));
+                        .sort((a, b) => new Date(b.edited_at || b.created_at) - new Date(a.edited_at || a.created_at));
       setComments(visible);
       onCommentCountChange?.(visible.length);
     } catch (err) {
@@ -33,8 +33,8 @@ export default function CommentSection({ shoutoutId, currentUser, onCommentCount
   const postComment = async () => {
     if (!newComment.trim()) return;
     await ApiService.addComment(shoutoutId, newComment.trim());
-    setNewComment("");
     fetchComments();
+    setNewComment("");
   };
 
 
@@ -94,7 +94,7 @@ export default function CommentSection({ shoutoutId, currentUser, onCommentCount
         <div key={c.id} className="bg-white-100 border border-gray-200 rounded-xl p-3 shadow-sm">
           <div className="flex justify-between items-center" ref={el => (menuRefs.current[c.id] = el)}>
             <div className="flex gap-3 items-center">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white font-semibold">
                 {c.username?.charAt(0).toUpperCase()}
               </div>
               <div>

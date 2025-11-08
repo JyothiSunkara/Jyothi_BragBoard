@@ -109,7 +109,7 @@ useEffect(() => {
 
   return (
     <div className="p-4 flex flex-col space-y-6">
-     <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 text-transparent bg-clip-text">
+     <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-700 via-pink-500 to-indigo-500 text-transparent bg-clip-text">
        My Shout-Outs
       </h2>
       <p className="text-gray-500 mb-6">
@@ -220,7 +220,7 @@ rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
     {/* TOP HEADER (Matches Feed) */}
     <div className="flex justify-between items-start">
       <div className="flex gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white font-semibold">
           {shout.giver_name?.charAt(0).toUpperCase()}
         </div>
 

@@ -292,8 +292,15 @@ def export_shoutouts_csv(db: Session = Depends(get_db), current_user: User = Dep
     writer.writerow(["ID", "Giver", "Receiver", "Message", "Tags", "Date"])
 
     for s in shoutouts:
-        tags = ",".join([t.tag_name for t in s.tags])  # adjust if using ShoutOutTag
-        writer.writerow([s.id, s.giver.username, s.receiver.username, s.message, tags, s.created_at])
+        tags = ",".join([str(t.tagged_user_id) for t in s.tags])
+        writer.writerow([
+          s.id,
+          s.giver.username,
+          s.receiver.username if s.receiver else "",
+          s.message,
+          tags,
+          s.created_at.strftime("%Y-%m-%d %H:%M")
+    ])
 
     output.seek(0)
     return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=shoutouts.csv"})
@@ -325,7 +332,7 @@ def export_shoutouts_pdf(db: Session = Depends(get_db), current_user: User = Dep
     elements.append(Paragraph("Shoutouts Report", styles['Heading2']))
     data1 = [["ID", "Giver", "Receiver", "Message", "Tags", "Date"]]
     for s in shoutouts:
-        tags = ", ".join([t.tag_name for t in s.tags])
+        tags = ", ".join([str(t.tagged_user_id) for t in s.tags])
         message = s.message if len(s.message) <= 50 else s.message[:50] + "..."
         data1.append([s.id, s.giver.username, s.receiver.username, message, tags, s.created_at.strftime("%Y-%m-%d")])
     table1 = Table(data1, repeatRows=1)

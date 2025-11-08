@@ -32,61 +32,74 @@ BragBoard is a full-stack web application that connects employees within a compa
 Jyothi_BragBoard/
 │
 ├── backend/
-│ ├── main.py
-│ ├── config.py
-│ ├── database.py
-│ ├── database_models.py
-│ ├── schemas.py
-│ ├── auth.py
-│ ├── check_db.py
-│ │
-│ ├── routers/
-│ │ ├── users.py
-│ │ ├── shoutouts.py
-│ │ └── reactions.py ← NEW
-│ │
-│ ├── uploads/
-│ │ └── (image files saved here)
-│ │
-│ ├── requirements.txt
-│ └── .env
+│   ├── main.py
+│   ├── config.py
+│   ├── database.py
+│   ├── database_models.py
+│   ├── schemas.py
+│   ├── auth.py
+│   ├── check_db.py
+│   │
+│   ├── routers/
+│   │   ├── users.py
+│   │   ├── shoutouts.py
+│   │   ├── reactions.py
+│   │   ├── achievements.py       
+│   │   ├── admins.py             
+│   │   └── comments.py          
+│   │
+│   ├── uploads/
+│   │   └── (image files saved here)
+│   │
+│   ├── requirements.txt
+│   └── .env
 │
 ├── frontend/
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── auth/
-│ │ │ │ ├── Auth.jsx
-│ │ │ │ ├── Login.jsx
-│ │ │ │ └── Register.jsx
-│ │ │ │
-│ │ │ ├── dashboard/
-│ │ │ │ ├── Dashboard.jsx
-│ │ │ │ ├── Header.jsx
-│ │ │ │ ├── Sidebar.jsx
-│ │ │ │ ├── Settings.jsx
-│ │ │ │ ├── MainContent.jsx
-│ │ │ │ └── DashboardContent.jsx
-│ │ │ │
-│ │ │ ├── shoutouts/
-│ │ │ │ ├── ShoutOutFeed.jsx
-│ │ │ │ ├── ShoutOutForm.jsx
-│ │ │ │ ├── ShoutOutPage.jsx
-│ │ │ │ ├── MyShoutOuts.jsx
-│ │ │ │ ├── EditShoutOut.jsx
-│ │ │ │ └── ReactionBar.jsx ← NEW
-│ │ │
-│ │ ├── services/
-│ │ │ └── api.js
-│ │ │
-│ │ ├── App.jsx
-│ │ └── index.css
-│ │
-│ ├── package.json
-│ ├── vite.config.js
-│ └── tailwind.config.js
+│   ├── src/
+│   │   ├── components/
+│   │   │
+│   │   │ ├── auth/
+│   │   │ │   ├── Auth.jsx
+│   │   │ │   ├── Login.jsx
+│   │   │ │   └── Register.jsx
+│   │   │
+│   │   │ ├── dashboard/
+│   │   │ │   ├── Dashboard.jsx
+│   │   │ │   ├── Header.jsx
+│   │   │ │   ├── Sidebar.jsx
+│   │   │ │   ├── Settings.jsx
+│   │   │ │   ├── MainContent.jsx
+│   │   │ │   ├── DashboardContent.jsx
+│   │   │ │   ├── Leaderboard.jsx       
+│   │   │ │   └── Achievements.jsx      
+│   │   │
+│   │   │ ├── shoutouts/
+│   │   │ │   ├── ShoutOutFeed.jsx
+│   │   │ │   ├── ShoutOutForm.jsx
+│   │   │ │   ├── ShoutOutPage.jsx
+│   │   │ │   ├── MyShoutOuts.jsx
+│   │   │ │   ├── EditShoutOut.jsx
+│   │   │ │   ├── ReactionBar.jsx        
+│   │   │ │   ├── ReportShoutOut.jsx    
+│   │   │ │   └── CommentsSection.jsx  
+│   │   │
+│   │   │ ├── admin/
+│   │   │ │   ├── AdminBoard.jsx        
+│   │   │ │   └── Reports.jsx           
+│   │   │ |
+│   │   │ └── services/
+│   │   │     └── api.js
+│   │   │
+│   │   ├── App.jsx
+│   │   └── index.css
+│   │
+│   ├── package.json
+│   ├── vite.config.js
+│   └── tailwind.config.js
 │
 ├── .gitignore
 └── PROJECT_DOCUMENTATION.md
+
 ```
 
 **Week 1 – Project Setup & Authentication**<br><br>
@@ -282,45 +295,55 @@ username, department, role in the frontend UI
 **Frontend**<br>
 
 -AdminDashboard.jsx:<br>
-
-
 -Fetches all admin statistics on component load using ApiService.<br>
-
-
 -Displays statistics in StatCards with hover animations.<br>
-
-
 -Renders Top Departments as a donut chart with a legend.<br>
-
-
 -Displays Activity Trend as a bar chart for last 30 days.
 <br>
-
 -Shows Top Contributors and Most Tagged Users with visual lists and charts.<br>
-
 -Reports.jsx:<br>
-
 -Fetches reported shout-outs with filtering for all, pending, resolved.<br>
 -Enables admins to resolve reports and delete shout-outs directly from the UI.<br>
 -Displays shoutout details in a modal with creator, receiver, category, message, image, and timestamp.<br>
--Uses toast notifications for success/error feedback on actions.<br>
+-Uses toast notifications for success/error feedback on actions.<br><br>
 
 **Output**<br><br>
 
 -Admins can now see a comprehensive dashboard of platform activity.<br>
-
 -Reports management is fully functional with live updates for resolve/delete actions.<br>
-
 -Top contributors and most tagged users are visualized for analytics.<br>
-
 -Department-wise statistics and activity trends provide actionable insights.<br>
-
 -Shout-outs, reactions, and comments can be moderated efficiently, ensuring platform integrity.
-UI is fully interactive, responsive, and visually aligned with existing app styling.<br>
+UI is fully interactive, responsive, and visually aligned with existing app styling.<br><br>
 
+**Week 8 – Leaderboard & Reports Export**<br><br>
+**Tasks Completed**<br>
+-Implemented export functionality for reports in both PDF and CSV formats from the admin panel.<br>
+-Developed a gamified Leaderboard to display top contributors and most tagged users with interactive charts and rankings.<br>
+-Polished frontend components including Achievements, Leaderboard, and Reports to ensure cohesive design, responsive layout, and consistent styling.<br><br>
+**Implementation Details**<br><br>
+**Backend**<br>
+-Reports Export:<br>
+Endpoint: GET /reports/shoutouts/csv returns CSV file of all reports.<br>
+Endpoint: GET /reports/shoutouts/pdf returns PDF file of all reports.<br>
+-Leaderboard:<br>
+-Reused /top-contributors and /most-tagged endpoints to fetch user stats.<br>
+-Endpoint ensures real-time ranking based on shout-outs sent and received.<br><br>
+**Frontend**<br>
+-Reports Export:<br>
+Added buttons in Reports.jsx to download PDF or CSV directly.<br>
+Provided toast notifications for success/error feedback.<br>
+-Leaderboard:<br>
+Leaderboard.jsx displays top contributors and most tagged users.<br>
+Interactive bar and vertical bar charts with responsive layout.<br>
+Highlighted top performers visually using color codes and rankings.<br>
+-UI Polishing:<br>
+-Refined Achievements cards, stat cards, and charts with professional styling, proper spacing, light backgrounds, and consistent typography.<br>
+-Removed redundant dashboard components; Achievements and Leaderboard now provide all relevant user stats.<br>
+-Verified responsive behavior across desktop and mobile screens.<br><br>
 
-
-
-
-
-
+**Output**<br>
+-Admins can now export all reports for offline analysis in PDF or CSV format.<br>
+-Leaderboard provides a gamified view of top contributors and most tagged users.<br>
+-Achievements and Leaderboard components are visually professional, responsive, and intuitive.<br>
+-All implemented features are fully tested and functional.<br>
