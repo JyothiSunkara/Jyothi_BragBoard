@@ -252,18 +252,14 @@ def delete_shoutout(
     if not shoutout:
         raise HTTPException(status_code=404, detail="Shoutout not found")
 
-    # If not admin, ensure the user owns it
+    # Admin can delete any, user only their own
     if current_user.role != "admin" and shoutout.giver_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this shoutout")
 
-    # Soft delete (same for admin and user)
     shoutout.is_deleted = True
-    shoutout.edited_at = datetime.utcnow()
-
     db.commit()
-    db.refresh(shoutout)
 
-    return {"detail": "Shoutout successfully soft-deleted", "id": shoutout_id}
+    return {"message": "Shoutout deleted successfully"}
 
 # -------------------- FEED --------------------
 @router.get("/feed", response_model=List[ShoutOutResponse])
@@ -301,10 +297,11 @@ def get_shoutouts_feed(
     for s in shoutouts:
 
         comment_count = (
-           db.query(func.count(Comment.id))
-           .filter(Comment.shoutout_id == s.id)
-           .scalar()
+          db.query(func.count(Comment.id))
+          .filter(Comment.shoutout_id == s.id, Comment.is_deleted == False)
+          .scalar()
         )
+
 
         reactions = (
            db.query(ShoutOutReaction, User)
@@ -367,22 +364,26 @@ def get_my_shoutouts(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Base query - only include non-deleted shoutouts + count comments
+    # Base query - only include non-deleted shoutouts + non deleted count comments
     query = (
-        db.query(
-            ShoutOut,
-            func.count(Comment.id).label("comment_count")   # ✅ count comments
-        )
-        .outerjoin(Comment, Comment.shoutout_id == ShoutOut.id)
-        .filter(
-            or_(
-                ShoutOut.giver_id == current_user.id,
-                ShoutOut.receiver_id == current_user.id
-            ),
-            ShoutOut.is_deleted == False
-        )
-        .group_by(ShoutOut.id)
+    db.query(
+        ShoutOut,
+        func.count(Comment.id).label("comment_count")
     )
+    .outerjoin(
+        Comment,
+        (Comment.shoutout_id == ShoutOut.id) & (Comment.is_deleted == False)  
+    )
+    .filter(
+        or_(
+            ShoutOut.giver_id == current_user.id,
+            ShoutOut.receiver_id == current_user.id
+        ),
+        ShoutOut.is_deleted == False
+    )
+    .group_by(ShoutOut.id)
+)
+
 
     # Apply department filter
     if receiver_department != "all":
@@ -470,3 +471,21 @@ def report_shoutout(shoutout_id: int, reason: str, db: Session = Depends(get_db)
     db.add(report)
     db.commit()
     return {"message": "Report submitted"}
+
+
+@router.get("/{shoutout_id}")
+def get_single_shoutout(shoutout_id: int, db: Session = Depends(get_db)):
+    shoutout = db.query(ShoutOut).filter(ShoutOut.id == shoutout_id).first()
+    if not shoutout:
+        raise HTTPException(status_code=404, detail="Shoutout not found")
+
+    return {
+        "id": shoutout.id,
+        "message": shoutout.message,
+        "category": shoutout.category,
+        "image_url": shoutout.image_url,
+        "created_at": shoutout.created_at,  # original created time
+        "giver_name": shoutout.giver.username if shoutout.giver else "[Unknown User]",
+        "receiver_name": shoutout.receiver.username if shoutout.receiver else "[Unknown User]",
+    }
+

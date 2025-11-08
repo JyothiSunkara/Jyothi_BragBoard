@@ -168,7 +168,7 @@ class CommentResponse(BaseModel):
     content: str
     created_at: datetime
     edited_at: datetime | None = None
-
+    is_deleted: bool  
     model_config = {
         "from_attributes": True
     }

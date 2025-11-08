@@ -17,7 +17,10 @@ class User(Base):
     role = Column(Enum("employee", "admin", name="user_role"), default="employee") 
     is_active = Column(Boolean, default=True)
     joined_at = Column(DateTime, default=datetime.utcnow)  
-
+    
+    @property
+    def is_admin(self):
+        return self.role == "admin"
     # Cascade delete given and received shoutouts
     given_shoutouts = relationship(
         "ShoutOut",
@@ -81,7 +84,7 @@ class ShoutOutReaction(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     reaction_type = Column(String, nullable=False)  # "like", "love", "clap", etc.
     created_at = Column(DateTime, default=datetime.utcnow)
-
+    is_deleted = Column(Boolean, default=False)
     shoutout = relationship("ShoutOut", back_populates="reactions")
     user = relationship("User", back_populates="reactions")
 
@@ -93,14 +96,29 @@ class ShoutOutReport(Base):
     __tablename__ = "shoutout_reports"
 
     id = Column(Integer, primary_key=True, index=True)
-    shoutout_id = Column(Integer, ForeignKey("shoutouts.id"))
-    reporter_id = Column(Integer, ForeignKey("users.id"))
+    shoutout_id = Column(Integer, ForeignKey("shoutouts.id", ondelete="CASCADE"), index=True, nullable=False)
+    reporter_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
     reason = Column(String, nullable=False)
     status = Column(String, default="pending")  # pending / resolved
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=None)
+    action_taken_by = Column(Integer, ForeignKey("users.id"), nullable=True)  
+    
+    # Relationships
+    reporter = relationship(
+        "User",
+        foreign_keys=[reporter_id],
+        backref="reports_made"
+    )
 
-    reporter = relationship("User")
-    shoutout = relationship("ShoutOut")
+    admin = relationship(
+        "User",
+        foreign_keys=[action_taken_by],
+        backref="reports_handled"
+    )
+
+    shoutout = relationship("ShoutOut", backref="reports")
+
 
 class Comment(Base):
     __tablename__ = "comments"

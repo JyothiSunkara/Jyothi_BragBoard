@@ -29,7 +29,6 @@ const Sidebar = ({ activeView, setActiveView, userRole }) => {
 
   const adminItems = [
     { id: "admin-dashboard", name: "Admin Dashboard", icon: <BarChart3 size={20} /> },
-    { id: "moderate", name: "Moderate Posts", icon: <Shield size={20} /> },
     { id: "reports", name: "Reports", icon: <FileWarning size={20} /> },
   ];
 

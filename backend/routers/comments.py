@@ -46,7 +46,8 @@ def get_comments(shoutout_id: int, db: Session = Depends(get_db)):
                 role=u.role,
                 content=c.content,
                 created_at=c.created_at,
-                edited_at=c.edited_at
+                edited_at=c.edited_at,
+                is_deleted=c.is_deleted
             )
         )
 

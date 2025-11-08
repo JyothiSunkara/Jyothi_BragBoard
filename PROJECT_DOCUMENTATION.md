@@ -247,6 +247,78 @@ username, department, role in the frontend UI
 -Edit/Delete options show only when allowed (self-comment or admin)<br><br>
 
 
+**Week 7 – Admin Tools & Analytics**<br><br>
+**Tasks Completed**<br>
+-Implemented admin dashboard with overall statistics: total users, departments, shout-outs, reactions, reports, and top contributor.<br>
+-Created endpoints to fetch top contributors and most tagged users.<br>
+-Developed functionality to view, resolve, and manage reported shout-outs.<br>
+-Enabled admin deletion of shout-outs along with cascading deletion of comments and reactions, and automatic resolution of related reports.<br>
+-Enabled admin deletion of individual comments.<br>
+-Added analytics features: top departments by shout-outs and activity trend (shout-outs per day over the last 30 days).<br>
+-Built frontend AdminDashboard.jsx to visualize all admin statistics using cards, bar charts, pie charts, and trend charts.<br>
+-Developed frontend Reports.jsx to manage reported shout-outs with resolve and delete functionality, including modals to view shoutout details.<br><br>
+
+**Implementation Details**<br><br>
+**Backend**<br>
+-Created Admin routes under /admin with role-based access (admin_required).<br>
+-Top Contributors:<br>
+    -Endpoint: GET /top-contributors<br>
+    -Returns top 5 users by number of shout-outs sent.<br>
+-Most Tagged Users:<br>
+     -Endpoint: GET /most-tagged<br>
+     -Returns top 5 users by number of times they were tagged.<br>
+-Admin Stats:<br>
+     -Endpoint: GET /stats<br>
+     -Returns total users, departments, shout-outs, reactions, reports, pending/resolved reports, and top contributor.<br>
+-Reports Management:<br>
+     -Endpoint: GET /reports with optional filter (all, pending, resolved)<br>
+     -Endpoint: POST /reports/{report_id}/resolve for resolving reports<br>
+     -Endpoint: DELETE /shoutout/{shoutout_id}/admin-delete for deleting a shoutout along with comments, reactions, and resolving related reports<br>
+     -Endpoint: DELETE /comment/{comment_id} for deleting comments individually<br>
+-Analytics:<br>
+     -Endpoint: GET /top-departments returns departments ranked by shout-out counts<br>
+     -Endpoint: GET /activity-trend returns shout-out counts per day for the last N days<br><br>
+
+**Frontend**<br>
+
+-AdminDashboard.jsx:<br>
+
+
+-Fetches all admin statistics on component load using ApiService.<br>
+
+
+-Displays statistics in StatCards with hover animations.<br>
+
+
+-Renders Top Departments as a donut chart with a legend.<br>
+
+
+-Displays Activity Trend as a bar chart for last 30 days.
+<br>
+
+-Shows Top Contributors and Most Tagged Users with visual lists and charts.<br>
+
+-Reports.jsx:<br>
+
+-Fetches reported shout-outs with filtering for all, pending, resolved.<br>
+-Enables admins to resolve reports and delete shout-outs directly from the UI.<br>
+-Displays shoutout details in a modal with creator, receiver, category, message, image, and timestamp.<br>
+-Uses toast notifications for success/error feedback on actions.<br>
+
+**Output**<br><br>
+
+-Admins can now see a comprehensive dashboard of platform activity.<br>
+
+-Reports management is fully functional with live updates for resolve/delete actions.<br>
+
+-Top contributors and most tagged users are visualized for analytics.<br>
+
+-Department-wise statistics and activity trends provide actionable insights.<br>
+
+-Shout-outs, reactions, and comments can be moderated efficiently, ensuring platform integrity.
+UI is fully interactive, responsive, and visually aligned with existing app styling.<br>
+
+
 
 
 

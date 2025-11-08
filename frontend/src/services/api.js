@@ -225,6 +225,13 @@ async updateUser(userId, updatedData) {
 
   // -------------------- ADMIN DASHBOARD --------------------
 
+  async getAdminStats() {
+    const res = await axios.get(`${API_BASE_URL}/admin/stats`, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }  
+ 
   async getTopContributors() {
     const res = await axios.get(`${API_BASE_URL}/admin/top-contributors`, {
       headers: this.getHeaders(),
@@ -239,44 +246,112 @@ async updateUser(userId, updatedData) {
     return res.data;
   }
 
+async getTopDepartments(limit = 8) {
+  const res = await axios.get(`${API_BASE_URL}/admin/top-departments?limit=${limit}`, {
+    headers: this.getHeaders(),
+  });
+  return res.data;
+}
+
+async getActivityTrend(days = 30) {
+  const res = await axios.get(`${API_BASE_URL}/admin/activity-trend?days=${days}`, {
+    headers: this.getHeaders(),
+  });
+  return res.data;
+}
+
   // -------------------- REPORT MANAGEMENT --------------------
   async reportShoutout(shoutout_id, reason) {
     const res = await axios.post(
       `${API_BASE_URL}/shoutouts/report/${shoutout_id}?reason=${encodeURIComponent(reason)}`,
-      {},
+      {}, // Empty body
       { headers: this.getHeaders() }
     );
     return res.data;
   }
+  
+  
 
-  async getReports() {
-    const res = await axios.get(`${API_BASE_URL}/admin/reports`, {
-      headers: this.getHeaders(),
-    });
-    return res.data;
-  }
+async getReports(filter = "all") {
+  const res = await axios.get(
+    `${API_BASE_URL}/admin/reports?filter=${filter}`,
+    { headers: this.getHeaders() }
+  );
+  return res.data;
+}
 
-  async resolveReport(report_id) {
-    const res = await axios.put(`${API_BASE_URL}/admin/resolve/${report_id}`, {}, {
-      headers: this.getHeaders(),
-    });
-    return res.data;
-  }
 
-  // -------------------- ADMIN DELETES --------------------
-  async adminDeleteShoutout(shoutout_id) {
-    const res = await axios.delete(`${API_BASE_URL}/admin/shoutout/${shoutout_id}`, {
-      headers: this.getHeaders(),
-    });
-    return res.data;
-  }
+async resolveReport(report_id) {
+  const res = await axios.post(
+    `${API_BASE_URL}/admin/reports/${report_id}/resolve`,
+    {},
+    { headers: this.getHeaders() }
+  );
+  return res.data;
+}
 
-  async adminDeleteComment(comment_id) {
-    const res = await axios.delete(`${API_BASE_URL}/admin/comment/${comment_id}`, {
-      headers: this.getHeaders(),
-    });
-    return res.data;
-  }
+async getShoutout(shoutout_id) {
+  const res = await axios.get(
+    `${API_BASE_URL}/shoutouts/${shoutout_id}`,
+    { headers: this.getHeaders() }
+  );
+  return res.data;
+}
+
+// -------------------- ADMIN ACTIONS --------------------
+async adminDeleteShoutout(shoutout_id) {
+  const res = await axios.delete(
+    `${API_BASE_URL}/admin/shoutout/${shoutout_id}/admin-delete`,
+    { headers: this.getHeaders() }
+  );
+  return res.data;
+}
+
+async adminDeleteComment(comment_id) {
+  const res = await axios.delete(
+    `${API_BASE_URL}/admin/comment/${comment_id}`,
+    { headers: this.getHeaders() }
+  );
+  return res.data;
+}
+
+
+// -------------------- EXPORT REPORTS --------------------
+async exportShoutoutsCSV() {
+  const res = await fetch(`${API_BASE_URL}/admin/export/shoutouts/csv`, {
+    headers: this.getHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to export CSV");
+  return res.blob(); // return blob for download
+}
+
+async exportShoutoutsPDF() {
+  const res = await fetch(`${API_BASE_URL}/admin/export/shoutouts/pdf`, {
+    headers: this.getHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to export PDF");
+  return res.blob(); // return blob for download
+}
+
+// -------------------- ACHIEVEMENTS --------------------
+async getAchievements() {
+  const res = await fetch(`${API_BASE_URL}/achievements/`, {
+    headers: this.getHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch achievements");
+  return await res.json();
+}
+
+// -------------------- LEADERBOARD --------------------
+async getLeaderboard(top_n = 10) {
+  const res = await fetch(`${API_BASE_URL}/achievements/leaderboard?top_n=${top_n}`, {
+    headers: this.getHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch leaderboard");
+  return await res.json();
+}
 
 }
 export default new ApiService();

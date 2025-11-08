@@ -21,6 +21,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
   const [date, setDate] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [openCommentsId, setOpenCommentsId] = useState(null);
+  const [commentCounts, setCommentCounts] = useState({}); // { [shoutId]: count }
 
   const departments = [
     "All Departments",
@@ -259,7 +260,7 @@ relative overflow-visible z-20
         filtered.map((shout) => (
           <motion.div
   key={shout.id}
-  className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all"
+  className="bg-white-100 border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all"
   initial={{ opacity: 0, y: 20 }}
   animate={{ opacity: 1, y: 0 }}
 >
@@ -296,37 +297,40 @@ relative overflow-visible z-20
       : dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
   </p>
 
-  {(shout.giver_id === currentUser.id || currentUser.role === "admin") && (
-    <>
-      {/* 3 Dots */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpenMenuId(openMenuId === shout.id ? null : shout.id);
-        }}
-        className="p-1 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
-      >
-        ⋮
-      </button>
+  {/* 3 Dots Button: show always if user can take any action */}
+{(shout.giver_id === currentUser.id || currentUser.role === "admin" || currentUser.role !== "admin") && (
+  <>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpenMenuId(openMenuId === shout.id ? null : shout.id);
+      }}
+      className="p-1 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+    >
+      ⋮
+    </button>
 
-      {/* Dropdown */}
-      {openMenuId === shout.id && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="absolute right-0 top-6 bg-white border border-gray-200 
+    {openMenuId === shout.id && (
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="absolute right-0 top-6 bg-white border border-gray-200 
           rounded-xl shadow-lg w-36 overflow-hidden z-50 animate-[fadeIn_0.15s_ease-out]"
-        >
-          {shout.giver_id === currentUser.id && (
-            <button
-              onClick={() => {
-                setEditingShoutoutId(shout.id);
-                setOpenMenuId(null);
-              }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition"
-            >
-              ✏️ Edit
-            </button>
-          )}
+      >
+        {/* Edit button: only creator */}
+        {shout.giver_id === currentUser.id && (
+          <button
+            onClick={() => {
+              setEditingShoutoutId(shout.id);
+              setOpenMenuId(null);
+            }}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition"
+          >
+            ✏️ Edit
+          </button>
+        )}
+
+        {/* Delete button: creator or admin */}
+        {(currentUser.role === "admin" || shout.giver_id === currentUser.id) && (
           <button
             onClick={() => {
               deleteShoutout(shout.id);
@@ -336,10 +340,28 @@ relative overflow-visible z-20
           >
             🗑 Delete
           </button>
-        </div>
-      )}
-    </>
-  )}
+        )}
+
+        {/* Report button: only non-admin & non-creator */}
+        {shout.giver_id !== currentUser.id && currentUser.role !== "admin" && (
+          <button
+            onClick={async () => {
+              const reason = prompt("Please enter the reason for reporting this shoutout:");
+              if (!reason || !reason.trim()) return;
+              await ApiService.reportShoutout(shout.id, reason.trim());
+              alert("Report submitted successfully!");
+              setOpenMenuId(null);
+            }}
+            className="w-full px-4 py-2 text-left text-sm text-yellow-700 hover:bg-yellow-50 transition"
+          >
+            🚩 Report
+          </button>
+        )}
+      </div>
+    )}
+  </>
+)}
+
 </div>
 
   </div>
@@ -384,19 +406,23 @@ relative overflow-visible z-20
   className="text-sm font-semibold text-violet-600 hover:underline"
 >
   {openCommentsId === shout.id
-    ? `Hide Comments (${shout.comment_count || 0})`
-    : `View Comments (${shout.comment_count || 0})`}
+    ? `Hide Comments (${commentCounts[shout.id] ?? shout.comment_count ?? 0})`
+    : `View Comments (${commentCounts[shout.id] ?? shout.comment_count ?? 0})`}
 </button>
 
 </div>
-
-{/*  Show Comments BELOW card when opened */}
+{/* Show Comments BELOW card when opened */}
 {openCommentsId === shout.id && (
   <div className="mt-4">
-    <CommentSection shoutoutId={shout.id} currentUser={currentUser} />
+    <CommentSection
+      shoutoutId={shout.id}
+      currentUser={currentUser}
+      onCommentCountChange={(count) =>
+        setCommentCounts((prev) => ({ ...prev, [shout.id]: count }))
+      }
+    />
   </div>
 )}
-
 
   {editingShoutoutId === shout.id && (
     <EditShoutOut
