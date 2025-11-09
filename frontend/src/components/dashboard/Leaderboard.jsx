@@ -23,7 +23,7 @@ export default function Leaderboard() {
     load();
   }, []);
 
-  // ✅ Close dropdown when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -57,7 +57,7 @@ export default function Leaderboard() {
         <p className="text-gray-500">Track your progress and recognition.</p>
       </div>
 
-      {/* ✅ My Stats Summary */}
+      {/* My Stats Summary */}
       {myStats && (
         <div className="p-5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow">
           <h2 className="text-lg font-semibold mb-3">Your Points Summary</h2>
@@ -80,7 +80,7 @@ export default function Leaderboard() {
             <Star className="text-purple-500" /> Gamified Global Leaderboard
           </h2>
 
-          {/* ✅ Small Button - Right Corner */}
+          {/*  Small Button - Right Corner */}
           <button
             onClick={() => setShowPoints((prev) => !prev)}
             className="text-sm px-3 py-1.5 rounded-lg border border-purple-300 text-purple-600 hover:bg-purple-50 transition"

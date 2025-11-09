@@ -1,4 +1,3 @@
-// src/components/admin/AdminDashboard.jsx
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -144,26 +143,25 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 space-y-8">
-<div className="flex items-center justify-between mb-8">
-  <h1 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-pink-500 text-transparent bg-clip-text">
-    Admin Insights Dashboard
-  </h1>
-
-  <div className="flex gap-4">
-      <button
-          onClick={downloadCSV}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-      >
-          Export CSV
-      </button>
-    <button
-      onClick={downloadPDF}
-      className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
-    >
-      Export PDF
-    </button>
-  </div>
-</div>
+      <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-pink-500 text-transparent bg-clip-text">
+            Admin Insights Dashboard
+          </h1>
+          <div className="flex gap-4">
+            <button
+              onClick={downloadCSV}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            >
+              Export CSV
+            </button>
+            <button
+              onClick={downloadPDF}
+              className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
+            >
+              Export PDF
+            </button>
+          </div>
+        </div>
 
 
       {/* Stat grid */}
@@ -271,42 +269,39 @@ export default function AdminDashboard() {
       </div>
 
       {/* Most Tagged Users */}
-<div className="bg-white rounded-2xl shadow-sm p-6">
-  <h2 className="text-xl font-semibold mb-5 bg-gradient-to-r from-pink-600 to-rose-500 text-transparent bg-clip-text">
-    Most Tagged Users
-  </h2>
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+          <h2 className="text-xl font-semibold mb-5 bg-gradient-to-r from-pink-600 to-rose-500 text-transparent bg-clip-text">
+            Most Tagged Users
+          </h2>
+          {stats.mostTaggedUsers.length ? (
+            <ul className="space-y-3">
+              {stats.mostTaggedUsers.map((u, i) => (
+              <li
+                key={i}
+                className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-md transition"
+              >
+              <div className="flex items-center gap-3">
+                {/* Rank Circle */}
+                <span className="w-8 h-8 flex items-center justify-center text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700">
+                  {i + 1}
+                </span>
 
-  {stats.mostTaggedUsers.length ? (
-    <ul className="space-y-3">
-      {stats.mostTaggedUsers.map((u, i) => (
-        <li
-          key={i}
-          className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-md transition"
-        >
-          <div className="flex items-center gap-3">
-            {/* Rank Circle */}
-            <span className="w-8 h-8 flex items-center justify-center text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700">
-              {i + 1}
-            </span>
+                <div>
+                  <p className="font-medium text-gray-800 capitalize">{u.username}</p>
+                  <p className="text-xs text-gray-500">Tagged {u.tag_count} times</p>
+                </div>
+              </div>
 
-            <div>
-              <p className="font-medium text-gray-800 capitalize">{u.username}</p>
-              <p className="text-xs text-gray-500">Tagged {u.tag_count} times</p>
-            </div>
-          </div>
-
-          <span className="font-semibold text-indigo-600 text-lg">
-            {u.tag_count}
-          </span>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p className="text-gray-500">No tagged users yet</p>
-  )}
-</div>
-
-    </div>
-    
+              <span className="font-semibold text-indigo-600 text-lg">
+                  {u.tag_count}
+              </span>
+              </li>
+              ))}
+            </ul>
+          ) : (
+                <p className="text-gray-500">No tagged users yet</p>
+          )}
+      </div>
+    </div> 
   );
 }

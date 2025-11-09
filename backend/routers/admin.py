@@ -63,7 +63,6 @@ def most_tagged(db: Session = Depends(get_db), current_user: User = Depends(get_
     return formatted
 
 # Admin Stats
-
 DEPARTMENTS = [
     "Engineering",
     "Human Resources",
@@ -210,6 +209,7 @@ def admin_delete_shoutout(shoutout_id: int, db: Session = Depends(get_db), curre
     db.commit()
     return {"message": "Shoutout, its comments and reactions deleted, related reports resolved"}
 
+#  Admin Delete comment
 @router.delete("/comment/{comment_id}")
 def admin_delete_comment(comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     admin_required(current_user)
@@ -222,7 +222,7 @@ def admin_delete_comment(comment_id: int, db: Session = Depends(get_db), current
     db.commit()
     return {"message": "Comment deleted by admin"}
 
-# --- Top Departments (counts of shoutouts per department) ---
+# --- Top Departments (counts of shoutouts per department) -------
 @router.get("/top-departments")
 def top_departments(limit: int = Query(8), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":

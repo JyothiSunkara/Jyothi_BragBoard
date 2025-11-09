@@ -434,7 +434,7 @@ def get_my_shoutouts(
             "edited_at": s.edited_at,
             "image_url": image_url,
             "tagged_users": tagged_users,
-            "comment_count": comment_count,   # ✅ send comment count to frontend
+            "comment_count": comment_count,   
 
             "reactions": reaction_counts,
             "my_reaction": my_reaction

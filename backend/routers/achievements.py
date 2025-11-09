@@ -42,7 +42,7 @@ def get_user_achievements(db: Session = Depends(get_db), current_user: User = De
     ).scalar()
 
 
-    # Comments (added)
+    # Comments 
     comments_given = db.query(func.count(Comment.id)).join(ShoutOut).filter(
     Comment.user_id == current_user.id,
     ShoutOut.is_deleted == False
@@ -177,7 +177,7 @@ def get_leaderboard(db: Session = Depends(get_db), current_user: User = Depends(
         Comment.is_deleted == False
     ).group_by(Comment.user_id).subquery()
 
-    # ✅ Gamified Score Query
+    # Gamified Score Query
     leaderboard_query = (
         db.query(
             User.username,
@@ -202,7 +202,7 @@ def get_leaderboard(db: Session = Depends(get_db), current_user: User = Depends(
         .all()
     )
 
-    # ✅ Convert to JSON
+    # Convert to JSON
     top_users_global = [
         {
             "username": u.username,
@@ -215,10 +215,10 @@ def get_leaderboard(db: Session = Depends(get_db), current_user: User = Depends(
         for u in leaderboard_query
     ]
 
-    # ✅ Department Filter
+    # Department Filter
     top_users_department = [u for u in top_users_global if db.query(User).filter(User.username == u["username"], User.department == current_user.department).first()]
 
-   # ✅ Top Departments Based on SHOUTOUTS SENT (Giver Department)
+   #  Top Departments Based on SHOUTOUTS SENT (Giver Department)
     top_departments = (
     db.query(
         ShoutOut.giver_department.label("department"),
@@ -228,13 +228,13 @@ def get_leaderboard(db: Session = Depends(get_db), current_user: User = Depends(
     .filter(ShoutOut.giver_department.isnot(None))
     .filter(ShoutOut.giver_department != "")
     .group_by(ShoutOut.giver_department)
-    .having(func.count(ShoutOut.id) > 0)  # ✅ ensures departments with ZERO activity are excluded
+    .having(func.count(ShoutOut.id) > 0)  # ensures departments with ZERO activity are excluded
     .order_by(func.count(ShoutOut.id).desc())
     .limit(3)
     .all()
 )
 
-    # ✅ Top Contributors by SENT only
+    # Top Contributors by SENT only
     top_contributors_global = db.query(
         User.username,
         func.count(ShoutOut.id).label("sent_count")

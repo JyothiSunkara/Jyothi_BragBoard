@@ -118,10 +118,11 @@ useEffect(() => {
 
       {/* Filters */}
       <motion.div
-className="
-bg-white/70 backdrop-blur-md border border-gray-200
-rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
-"        initial={{ opacity: 0, y: -10 }}
+        className="
+         bg-white/70 backdrop-blur-md border border-gray-200
+           rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
+          "        
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center space-x-2 min-w-[200px]">
@@ -209,16 +210,16 @@ rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
         </div>
       )}
 
-{shoutouts.map((shout) => (
-  <motion.div
-    key={shout.id}
-    className="bg-white-100 border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-visible"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-  >
+      {shoutouts.map((shout) => (
+       <motion.div
+          key={shout.id}
+          className="bg-white-100 border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-visible"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+       >
 
-    {/* TOP HEADER (Matches Feed) */}
-    <div className="flex justify-between items-start">
+     {/* TOP HEADER (Matches Feed) */}
+     <div className="flex justify-between items-start">
       <div className="flex gap-3">
         <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white font-semibold">
           {shout.giver_name?.charAt(0).toUpperCase()}
@@ -250,19 +251,19 @@ rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
         </p>
 
          {/* 3 Dots Button: show always if user can take any action */}
-{(shout.giver_id === currentUser.id || currentUser.role === "admin" || currentUser.role !== "admin") && (
-  <>
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        setOpenMenuId(openMenuId === shout.id ? null : shout.id);
-      }}
-      className="p-1 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
-    >
+      {(shout.giver_id === currentUser.id || currentUser.role === "admin" || currentUser.role !== "admin") && (
+      <>
+      <button
+          onClick={(e) => {
+          e.stopPropagation();
+          setOpenMenuId(openMenuId === shout.id ? null : shout.id);
+        }}
+        className="p-1 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+      >
       ⋮
-    </button>
+      </button>
 
-    {openMenuId === shout.id && (
+      {openMenuId === shout.id && (
       <div
         onClick={(e) => e.stopPropagation()}
         className="absolute right-0 top-6 bg-white border border-gray-200 
@@ -310,10 +311,10 @@ rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
           </button>
         )}
       </div>
-    )}
-  </>
-)}
-      </div>
+      )}
+      </>
+     )}
+    </div>
     </div>
 
     {/* MESSAGE */}
@@ -345,33 +346,33 @@ rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
     )}
 
     {/* Reactions + View Comments */}
-<div className="flex justify-between items-center mt-5 pt-3 border-t border-gray-200">
-  <ReactionBar shoutout={shout} />
+    <div className="flex justify-between items-center mt-5 pt-3 border-t border-gray-200">
+      <ReactionBar shoutout={shout} />
 
-  <button
-  onClick={() =>
-    setOpenCommentsId(openCommentsId === shout.id ? null : shout.id)
-  }
-  className="text-sm font-semibold text-violet-600 hover:underline"
->
-  {openCommentsId === shout.id
-    ? `Hide Comments (${commentCounts[shout.id] ?? shout.comment_count ?? 0})`
-    : `View Comments (${commentCounts[shout.id] ?? shout.comment_count ?? 0})`}
-</button>
+      <button
+        onClick={() =>
+        setOpenCommentsId(openCommentsId === shout.id ? null : shout.id)
+        }
+        className="text-sm font-semibold text-violet-600 hover:underline"
+      >
+      {openCommentsId === shout.id
+        ? `Hide Comments (${commentCounts[shout.id] ?? shout.comment_count ?? 0})`
+        : `View Comments (${commentCounts[shout.id] ?? shout.comment_count ?? 0})`}
+      </button>
 
-</div>
-{/* Show Comments BELOW card when opened */}
-{openCommentsId === shout.id && (
-  <div className="mt-4">
-    <CommentSection
-      shoutoutId={shout.id}
-      currentUser={currentUser}
-      onCommentCountChange={(count) =>
-        setCommentCounts((prev) => ({ ...prev, [shout.id]: count }))
-      }
-    />
-  </div>
-)}
+    </div>
+    {/* Show Comments BELOW card when opened */}
+     {openCommentsId === shout.id && (
+      <div className="mt-4">
+       <CommentSection
+          shoutoutId={shout.id}
+          currentUser={currentUser}
+          onCommentCountChange={(count) =>
+          setCommentCounts((prev) => ({ ...prev, [shout.id]: count }))
+        }
+       />
+      </div>
+     )}
 
     {/* EDIT FORM */}
     {editingShoutoutId === shout.id && (

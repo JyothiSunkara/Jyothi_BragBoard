@@ -18,8 +18,7 @@ export default function Reports({ currentUser }) {
   const fetchReports = async (filterType = "all") => {
     setLoading(true);
     try {
-      // ✅ Pass correct query param to backend
-      const res = await ApiService.getReports(filterType); // make sure ApiService expects 'all', 'pending', 'resolved'
+      const res = await ApiService.getReports(filterType); // 'all', 'pending', 'resolved'
       setReports(res);
 
       const total = res.length;
@@ -188,52 +187,48 @@ export default function Reports({ currentUser }) {
 
       {/* Shoutout Modal */}
       {selectedShoutout && (
-  <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-    {/* Soft transparent background */}
-    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto" onClick={() => setSelectedShoutout(null)}></div>
+         <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto" onClick={() => setSelectedShoutout(null)}></div>
+            {/* Shoutout Card */}
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50 pointer-events-auto transform transition-transform duration-300 scale-100">
+                <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-bold text-gray-800">Shoutout Details</h2>
+                <button
+                   onClick={() => setSelectedShoutout(null)}
+                   className="text-gray-500 hover:text-gray-900 font-bold text-lg"
+                >
+                  ×
+                </button>
+            </div>
 
-    {/* Shoutout Card */}
-    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50 pointer-events-auto transform transition-transform duration-300 scale-100">
-      <div className="flex justify-between items-start mb-4">
-        <h2 className="text-xl font-bold text-gray-800">Shoutout Details</h2>
-        <button
-          onClick={() => setSelectedShoutout(null)}
-          className="text-gray-500 hover:text-gray-900 font-bold text-lg"
-        >
-          ×
-        </button>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+              {selectedShoutout.giver_name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex flex-col">
+              <span className="text-gray-800 font-medium">{selectedShoutout.giver_name}</span>
+              <span className="text-gray-500 text-sm">To: {selectedShoutout.receiver_name}</span>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-700 mb-2">
+              <span className="font-medium">Category:</span> {selectedShoutout.category}
+          </p>
+          <p className="text-gray-800 mb-3">{selectedShoutout.message}</p>
+          {selectedShoutout.image_url && (
+            <img
+              src={selectedShoutout.image_url}
+              alt="shoutout"
+              className="w-full max-h-64 object-cover rounded-lg mb-3"
+            />
+          )}
+
+          <p className="text-xs text-gray-400">
+             Created at: {dayjs.utc(selectedShoutout.created_at).local().format("DD MMM YYYY, hh:mm A")}
+          </p>
+       </div>
       </div>
-
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-          {selectedShoutout.giver_name?.charAt(0).toUpperCase()}
-        </div>
-        <div className="flex flex-col">
-          <span className="text-gray-800 font-medium">{selectedShoutout.giver_name}</span>
-          <span className="text-gray-500 text-sm">To: {selectedShoutout.receiver_name}</span>
-        </div>
-      </div>
-
-      <p className="text-sm text-gray-700 mb-2">
-        <span className="font-medium">Category:</span> {selectedShoutout.category}
-      </p>
-
-      <p className="text-gray-800 mb-3">{selectedShoutout.message}</p>
-
-      {selectedShoutout.image_url && (
-        <img
-          src={selectedShoutout.image_url}
-          alt="shoutout"
-          className="w-full max-h-64 object-cover rounded-lg mb-3"
-        />
       )}
-
-      <p className="text-xs text-gray-400">
-        Created at: {dayjs.utc(selectedShoutout.created_at).local().format("DD MMM YYYY, hh:mm A")}
-      </p>
-    </div>
-  </div>
-)}
 
     </div>
   );

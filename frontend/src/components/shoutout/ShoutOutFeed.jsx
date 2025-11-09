@@ -163,12 +163,11 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
 
       {/* Filters */}
       <motion.div
-className="
-bg-white/70 backdrop-blur-md border border-gray-200
-rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
-relative overflow-visible z-20
-"
-
+          className="
+          bg-white/70 backdrop-blur-md border border-gray-200
+            rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4
+            relative overflow-visible z-20
+          "
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -259,11 +258,11 @@ relative overflow-visible z-20
       ) : (
         filtered.map((shout) => (
           <motion.div
-  key={shout.id}
-  className="bg-white-100 border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all"
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
->
+            key={shout.id}
+            className="bg-white-100 border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
 
   {/* Top Header */}
   <div className="flex justify-between items-start">

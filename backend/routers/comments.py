@@ -9,7 +9,7 @@ from auth import get_current_user
 
 router = APIRouter(prefix="/comments", tags=["Comments"])
 
-
+# post comment
 @router.post("/{shoutout_id}", response_model=dict)
 def add_comment(shoutout_id: int, data: CommentCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     comment = Comment(
@@ -22,7 +22,7 @@ def add_comment(shoutout_id: int, data: CommentCreate, db: Session = Depends(get
     db.commit()
     return {"message": "Comment added successfully"}
 
-
+# get comments
 @router.get("/{shoutout_id}", response_model=list[CommentResponse])
 def get_comments(shoutout_id: int, db: Session = Depends(get_db)):
     # join Comment + User so we can include user fields
@@ -53,7 +53,8 @@ def get_comments(shoutout_id: int, db: Session = Depends(get_db)):
 
     return result
 
-@router.put("/{comment_id}", response_model=dict)
+# update comment
+@router.put("/{comment_id}", response_model=CommentResponse)
 def update_comment(comment_id: int, data: CommentCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     comment = db.query(Comment).filter(Comment.id == comment_id).first()
     if not comment:
@@ -63,13 +64,26 @@ def update_comment(comment_id: int, data: CommentCreate, db: Session = Depends(g
         raise HTTPException(status_code=403, detail="Not allowed")
 
     comment.content = data.content
-    comment.edited_at = datetime.utcnow()  
+    comment.edited_at = datetime.utcnow()
     db.commit()
     db.refresh(comment)
 
-    return {"message": "Comment updated successfully"}
+    user = db.query(User).filter(User.id == comment.user_id).first()
 
+    return CommentResponse(
+        id=comment.id,
+        shoutout_id=comment.shoutout_id,
+        user_id=user.id,
+        username=user.username,
+        department=user.department,
+        role=user.role,
+        content=comment.content,
+        created_at=comment.created_at,
+        edited_at=comment.edited_at,
+        is_deleted=comment.is_deleted
+    )
 
+# delete comment
 @router.delete("/{comment_id}", response_model=dict)
 def delete_comment(
     comment_id: int, 
