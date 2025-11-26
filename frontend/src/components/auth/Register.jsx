@@ -60,7 +60,7 @@ const Register = ({ onSuccess, onToggleMode }) => {
 
       {/* Branding */}
       <div className="text-center mb-8 animate-fadeIn">
-        <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
           BragBoard
         </h1>
         <p className="text-gray-700 mt-2 text-sm sm:text-base">
@@ -69,10 +69,10 @@ const Register = ({ onSuccess, onToggleMode }) => {
       </div>
 
       {/* Form Card */}
-      <div className="max-w-md w-full bg-white/70 backdrop-blur-xl shadow-2xl rounded-3xl p-10 border border-white/30 transition-transform transform hover:scale-[1.01] duration-300">
+      <div className="max-w-md w-full bg-white/70 backdrop-blur-xl shadow-2xl rounded-3xl p-6 sm:p-8 md:p-10 border border-white/30 transition-transform transform hover:scale-[1.01] duration-300">
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="mx-auto h-14 w-14 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
             <svg
               className="h-7 w-7 text-white"
@@ -140,7 +140,7 @@ const Register = ({ onSuccess, onToggleMode }) => {
                 required
                 value={formData.department}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all"
+                className="block w-full max-w-full h-11 px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all"
               >
                 <option value="">Select Department</option>
                 <option value="Engineering">Engineering</option>
@@ -160,7 +160,7 @@ const Register = ({ onSuccess, onToggleMode }) => {
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all"
+                className="block w-full max-w-full h-11 px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all"
               >
                 <option value="employee">Employee</option>
                 <option value="admin">Admin</option>
@@ -177,7 +177,7 @@ const Register = ({ onSuccess, onToggleMode }) => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all appearance-none"
               />
             </div>
 
@@ -191,7 +191,7 @@ const Register = ({ onSuccess, onToggleMode }) => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm Password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-900 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all appearance-none"
               />
             </div>
           </div>

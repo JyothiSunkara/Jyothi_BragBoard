@@ -39,11 +39,11 @@ const Auth = ({ onAuthSuccess }) => {
   if (mode === "landing") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-200 via-white to-purple-300 flex items-center justify-center px-6 sm:px-12 lg:px-24 animate-fadeIn">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-10 lg:gap-12">
 
           {/* Left Section */}
-          <div className="max-w-lg">
-            <h1 className="text-5xl sm:text-6xl font-extrabold mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
+          <div className="max-w-lg order-1 lg:order-none">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
               BragBoard
             </h1>
             <p className="text-lg text-gray-700 mb-6">
