@@ -1,8 +1,29 @@
-const Header = ({ user, onLogout }) => {
+const Header = ({ user, onLogout, onMenuToggle }) => {
   return (
     <header className="bg-gradient-to-r from-white via-indigo-50 to-purple-50 backdrop-blur-sm shadow-md border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
+        <div className="flex items-center space-x-3">
+
+{/* 🌟 HAMBURGER (Mobile Only) */}
+<button
+  className="md:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200"
+  onClick={onMenuToggle}
+>
+  <svg
+    className="w-6 h-6 text-gray-700"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M4 6h16M4 12h16M4 18h16"
+    />
+  </svg>
+</button>
           {/* Logo and Brand */}
           <div className="flex items-center">
             <div className="h-9 w-9 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-3 shadow-sm">
@@ -32,7 +53,7 @@ const Header = ({ user, onLogout }) => {
               BragBoard
             </h1>
           </div>
-
+</div>
           {/* User Info and Actions */}
           <div className="flex items-center space-x-4">
             {/* Department */}

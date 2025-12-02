@@ -7,7 +7,8 @@ const Dashboard = ({ user, onLogout }) => {
   const [activeView, setActiveView] = useState("feed");
   const [shoutouts, setShoutouts] = useState([]);
   const [shoutoutUpdated, setShoutoutUpdated] = useState(false);
-  const [currentUser, setCurrentUser] = useState(user); // 👈 local state for updates
+  const [currentUser, setCurrentUser] = useState(user); // local state for updates
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const handleUserUpdate = () => {
@@ -47,15 +48,21 @@ const Dashboard = ({ user, onLogout }) => {
     setShoutouts((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev)
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <Header user={currentUser} onLogout={onLogout} />
+      <Header user={currentUser} onLogout={onLogout} onMenuToggle={toggleSidebar}/>
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           activeView={activeView}
           setActiveView={setActiveView}
           userRole={currentUser?.role}
+          isOpen={sidebarOpen}
+          toggleSidebar={toggleSidebar}
         />
 
         <div className="flex-1 overflow-y-auto">

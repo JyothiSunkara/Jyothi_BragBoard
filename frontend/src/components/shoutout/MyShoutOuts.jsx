@@ -244,7 +244,7 @@ useEffect(() => {
              🏷 {shout.category}
           </span>
       )}
-        <p className="text-[11px] text-gray-400 whitespace-nowrap">
+        <p className="text-[11px] text-gray-600 whitespace-nowrap">
           {shout.edited_at
             ? `Edited: ${dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}`
             : dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
@@ -258,7 +258,7 @@ useEffect(() => {
           e.stopPropagation();
           setOpenMenuId(openMenuId === shout.id ? null : shout.id);
         }}
-        className="p-1 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+        className="p-1 rounded-full hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition"
       >
       ⋮
       </button>

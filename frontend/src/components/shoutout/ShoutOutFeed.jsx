@@ -145,7 +145,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
 <div className="p-4 flex flex-col space-y-6 relative overflow-visible">
       
 {/* Welcome Header with Gradient Text Only */}
-<div className="p-2">
+{/* <div className="p-2">
 <h1 className="text-3xl font-extrabold bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent">
   Welcome, {currentUser?.username || "User"}! 👋
 </h1>
@@ -154,10 +154,9 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
   </p>
 </div>
 
-
-
-      <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 text-transparent bg-clip-text">
-        Shout-Out Feed
+ */}
+     <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-700 via-pink-500 to-indigo-500 text-transparent bg-clip-text">
+     Shout-Out Feed
       </h2>
       <p className="text-gray-500 mb-6">Browse recognitions shared across the organization 💬</p>
 
@@ -290,7 +289,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
   </span>
 )}
 
-  <p className="text-[11px] text-gray-400 whitespace-nowrap">
+  <p className="text-[11px] text-gray-600 whitespace-nowrap">
     {shout.edited_at
       ? `Edited: ${dayjs.utc(shout.edited_at).local().format("DD MMM YYYY, hh:mm A")}`
       : dayjs.utc(shout.created_at).local().format("DD MMM YYYY, hh:mm A")}
@@ -304,7 +303,7 @@ export default function ShoutOutFeed({ currentUser, shoutoutUpdated }) {
         e.stopPropagation();
         setOpenMenuId(openMenuId === shout.id ? null : shout.id);
       }}
-      className="p-1 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+      className="p-1 rounded-full hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition"
     >
       ⋮
     </button>
