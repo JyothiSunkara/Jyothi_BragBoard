@@ -32,65 +32,64 @@ const Sidebar = ({ activeView, setActiveView, userRole, isOpen, toggleSidebar })
 
   return (
     <>
-      {/* 🔥 MOBILE BACKDROP */}
+      {/* ===== 🔥 MOBILE BACKDROP ===== */}
       <div
         onClick={toggleSidebar}
-        className={`fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+        className={`fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-sm transition-opacity duration-300
+        ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
       ></div>
 
-     {/* 🔥 MOBILE SIDEBAR */}
-<div
-  className={`md:hidden fixed top-0 left-0 h-screen w-64 z-50
-  bg-gradient-to-b from-indigo-50 via-white to-purple-50 
-  shadow-lg transform transition-transform duration-300
-  ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
->
-  {/* Inner wrapper to handle relative positioning */}
-  <div className="relative p-4 h-full">
-    <button
-      className="absolute top-4 right-4 text-gray-600 hover:text-indigo-600"
-      onClick={toggleSidebar}
-    >
-      ✕
-    </button>
-
-    {/* Menu */}
-    <div className="mt-8">
-    {menuItems.map((item) => (
+      {/* ===== 🔥 MOBILE SIDEBAR ===== */}
       <div
-        key={item.id}
-        onClick={() => {
-          setActiveView(item.id);
-          toggleSidebar();
-        }}
-        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer mb-2 
-          ${
-            activeView === item.id
-              ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
-              : "hover:bg-indigo-100 text-gray-700"
-          }
-        `}
+        className={`md:hidden fixed top-0 left-0 h-screen w-64 z-50
+          bg-gradient-to-b from-indigo-50 via-white to-purple-50 shadow-xl
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <span className={activeView === item.id ? "text-white" : "text-indigo-600"}>
-          {item.icon}
-        </span>
-        <span className="text-lg font-medium">{item.name}</span>
+        <div className="relative p-4 h-full overflow-y-auto">
+          {/* Close Button */}
+          <button
+            className="absolute top-4 right-4 text-gray-600 hover:text-indigo-600 text-xl"
+            onClick={toggleSidebar}
+          >
+            ✕
+          </button>
+
+          {/* Menu Items */}
+          <div className="mt-10">
+            {menuItems.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => {
+                  setActiveView(item.id);
+                  toggleSidebar();
+                }}
+                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer mb-2 transition-all
+                  ${
+                    activeView === item.id
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
+                      : "hover:bg-indigo-100 text-gray-700"
+                  }
+                `}
+              >
+                <span className={activeView === item.id ? "text-white" : "text-indigo-600"}>
+                  {item.icon}
+                </span>
+                <span className="text-lg font-medium">{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    ))}
-    </div>
-  </div>
-</div>
 
-      {/* 🔥 DESKTOP SIDEBAR */}
+      {/* ===== 🔥 DESKTOP SIDEBAR (COLLAPSIBLE) ===== */}
       <div
-        className={`hidden md:flex flex-col min-h-screen shadow-sm 
-        bg-gradient-to-b from-indigo-50 via-white to-purple-50
-        transition-all duration-300 p-4
-        ${isOpen ? "w-64" : "w-20"}`}
+        className={`hidden md:flex flex-col min-h-screen shadow-md
+          bg-gradient-to-b from-indigo-50 via-white to-purple-50
+          transition-all duration-300 p-4
+          ${isOpen ? "w-64" : "w-20"}`}
       >
-        {/* Collapse Button */}
+        {/* Toggle Collapse Button */}
         <button
           onClick={toggleSidebar}
           className="self-end mb-4 text-gray-500 hover:text-indigo-600"
@@ -98,12 +97,14 @@ const Sidebar = ({ activeView, setActiveView, userRole, isOpen, toggleSidebar })
           {isOpen ? "←" : "→"}
         </button>
 
-        {/* Menu */}
+        {/* Menu Items */}
         {menuItems.map((item) => (
           <div
             key={item.id}
             onClick={() => setActiveView(item.id)}
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer mb-1 
+            className={`flex items-center ${
+              isOpen ? "gap-3" : "justify-center"
+            } p-3 rounded-lg cursor-pointer mb-1 transition-all
               ${
                 activeView === item.id
                   ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
@@ -115,6 +116,7 @@ const Sidebar = ({ activeView, setActiveView, userRole, isOpen, toggleSidebar })
               {item.icon}
             </span>
 
+            {/* Show text only when expanded */}
             {isOpen && <span className="text-lg font-medium">{item.name}</span>}
           </div>
         ))}

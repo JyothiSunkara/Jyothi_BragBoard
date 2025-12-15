@@ -11,6 +11,21 @@ const Dashboard = ({ user, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(true); // desktop → open
+      } else {
+        setSidebarOpen(false); // mobile → closed
+      }
+    };
+
+    handleResize(); // run once on mount
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     const handleUserUpdate = () => {
       const updatedUser = JSON.parse(localStorage.getItem("current_user"));
       setCurrentUser(updatedUser);
@@ -25,9 +40,12 @@ const Dashboard = ({ user, onLogout }) => {
     const fetchShoutouts = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const res = await fetch("http://localhost:8000/shoutouts/feed?department=all", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          "http://localhost:8000/shoutouts/feed?department=all",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         if (!res.ok) throw new Error("Failed to fetch shoutouts");
         const data = await res.json();
         setShoutouts(data);
@@ -42,19 +60,23 @@ const Dashboard = ({ user, onLogout }) => {
   const handleShoutoutPosted = () => {
     setShoutoutUpdated((prev) => !prev);
   };
-  
+
   // Handle delete locally
   const handleDeleteShout = (id) => {
     setShoutouts((prev) => prev.filter((s) => s.id !== id));
   };
 
   const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev)
+    setSidebarOpen((prev) => !prev);
   };
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <Header user={currentUser} onLogout={onLogout} onMenuToggle={toggleSidebar}/>
+      <Header
+        user={currentUser}
+        onLogout={onLogout}
+        onMenuToggle={toggleSidebar}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -73,6 +95,7 @@ const Dashboard = ({ user, onLogout }) => {
             handleDeleteShout={handleDeleteShout}
             shoutoutUpdated={shoutoutUpdated}
             handleShoutoutPosted={handleShoutoutPosted}
+            isSidebarOpen={sidebarOpen}
           />
         </div>
       </div>
