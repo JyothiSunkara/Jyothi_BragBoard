@@ -3,11 +3,18 @@ import ShoutOutForm from "../shoutout/ShoutOutForm";
 import MyShoutOuts from "../shoutout/MyShoutOuts";
 import AdminDashboard from "../admin/AdminDashboard";
 import Reports from "../admin/Reports";
-import Settings from "./Settings"; 
-import Achievements from "./Achievements"; 
-import Leaderboard from "./Leaderboard"; 
+import Settings from "./Settings";
+import Achievements from "./Achievements";
+import Leaderboard from "./Leaderboard";
 
-const MainContent = ({ activeView, user, shoutouts, handleDeleteShout, shoutoutUpdated, handleShoutoutPosted }) => {
+const MainContent = ({
+  activeView,
+  user,
+  shoutouts,
+  handleDeleteShout,
+  shoutoutUpdated,
+  handleShoutoutPosted,
+}) => {
   switch (activeView) {
     case "feed":
       return (
@@ -15,14 +22,16 @@ const MainContent = ({ activeView, user, shoutouts, handleDeleteShout, shoutoutU
           currentUser={user}
           shoutouts={shoutouts}
           handleDeleteShout={handleDeleteShout}
-          shoutoutUpdated={shoutoutUpdated} 
+          shoutoutUpdated={shoutoutUpdated}
         />
       );
     case "create":
-      return <ShoutOutForm 
-                currentUser={user}
-                onShoutoutPosted={handleShoutoutPosted}
-             />;
+      return (
+        <ShoutOutForm
+          currentUser={user}
+          onShoutoutPosted={handleShoutoutPosted}
+        />
+      );
     case "my-shoutouts":
       return (
         <MyShoutOuts
@@ -33,18 +42,16 @@ const MainContent = ({ activeView, user, shoutouts, handleDeleteShout, shoutoutU
       );
 
     case "leaderboard":
-        return <Leaderboard />;
-    case "achievements":
-          return <Achievements />;
+      return <Leaderboard />;
+    // case "achievements":
+    //       return <Achievements />;
     case "admin-dashboard":
-        return <AdminDashboard />; 
+      return <AdminDashboard />;
     case "reports":
-        return <Reports />;
+      return <Reports />;
     case "settings":
-      return <Settings currentUser={user} />
+      return <Settings currentUser={user} />;
 
-    
-        
     default:
       return <div className="text-gray-500">Coming soon...</div>;
   }

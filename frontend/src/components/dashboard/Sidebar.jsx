@@ -9,21 +9,39 @@ import {
   Trophy,
 } from "lucide-react";
 
-const Sidebar = ({ activeView, setActiveView, userRole, isOpen, toggleSidebar }) => {
+const Sidebar = ({
+  activeView,
+  setActiveView,
+  userRole,
+  isOpen,
+  toggleSidebar,
+}) => {
   const commonItems = [
     { id: "feed", name: "Shout-Out Feed", icon: <MessageSquare size={20} /> },
     { id: "create", name: "Create Shout-Out", icon: <Send size={20} /> },
-    { id: "my-shoutouts", name: "My Shout-Outs", icon: <UserCircle size={20} /> },
-    { id: "achievements", name: "Achievements", icon: <Award size={20} /> },
+    {
+      id: "my-shoutouts",
+      name: "My Shout-Outs",
+      icon: <UserCircle size={20} />,
+    },
+    // { id: "achievements", name: "Achievements", icon: <Award size={20} /> },
     { id: "leaderboard", name: "Leaderboard", icon: <Trophy size={20} /> },
   ];
 
   const adminItems = [
-    { id: "admin-dashboard", name: "Admin Dashboard", icon: <BarChart3 size={20} /> },
+    {
+      id: "admin-dashboard",
+      name: "Admin Dashboard",
+      icon: <BarChart3 size={20} />,
+    },
     { id: "reports", name: "Reports", icon: <FileWarning size={20} /> },
   ];
 
-  const settingsItem = { id: "settings", name: "Settings", icon: <Settings size={20} /> };
+  const settingsItem = {
+    id: "settings",
+    name: "Settings",
+    icon: <Settings size={20} />,
+  };
 
   const menuItems =
     userRole === "admin"
@@ -72,7 +90,11 @@ const Sidebar = ({ activeView, setActiveView, userRole, isOpen, toggleSidebar })
                   }
                 `}
               >
-                <span className={activeView === item.id ? "text-white" : "text-indigo-600"}>
+                <span
+                  className={
+                    activeView === item.id ? "text-white" : "text-indigo-600"
+                  }
+                >
                   {item.icon}
                 </span>
                 <span className="text-lg font-medium">{item.name}</span>
@@ -112,7 +134,11 @@ const Sidebar = ({ activeView, setActiveView, userRole, isOpen, toggleSidebar })
               }
             `}
           >
-            <span className={activeView === item.id ? "text-white" : "text-indigo-600"}>
+            <span
+              className={
+                activeView === item.id ? "text-white" : "text-indigo-600"
+              }
+            >
               {item.icon}
             </span>
 
