@@ -199,7 +199,7 @@ export default function ShoutOutFeed({
           {showStats && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {/* TOTAL */}
-              <div className="col-span-2 sm:col-span-1 bg-indigo-50 rounded-xl p-4 text-center">
+              <div className="col-span-2 sm:col-span-1 bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center">
                 <p className="text-sm text-gray-600">Total</p>
                 <p className="text-2xl font-bold text-indigo-700">
                   {totalCount}
@@ -207,7 +207,7 @@ export default function ShoutOutFeed({
               </div>
 
               {/* SENT */}
-              <div className="bg-emerald-50 rounded-xl p-4 text-center">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
                 <p className="text-sm text-gray-600">Sent</p>
                 <p className="text-2xl font-bold text-emerald-700">
                   {sentCount}
@@ -215,7 +215,7 @@ export default function ShoutOutFeed({
               </div>
 
               {/* RECEIVED */}
-              <div className="bg-pink-50 rounded-xl p-4 text-center">
+              <div className="bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
                 <p className="text-sm text-gray-600">Received</p>
                 <p className="text-2xl font-bold text-pink-700">
                   {receivedCount}
@@ -299,7 +299,7 @@ export default function ShoutOutFeed({
             {/* Search */}
             <input
               type="text"
-              placeholder="Search by sender or receiver"
+              placeholder="Search by name"
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               className="flex-1 min-w-[200px] border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
@@ -361,7 +361,7 @@ export default function ShoutOutFeed({
             filtered.map((shout) => (
               <motion.div
                 key={shout.id}
-                className="bg-white-100 border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all"
+                className="rounded-2xl p-5 bg-white/70 border border-white/40 shadow-sm hover:shadow-md transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
@@ -517,7 +517,7 @@ export default function ShoutOutFeed({
                     )}
                     <p className="text-[11px] text-gray-600 whitespace-nowrap mt-1">
                       {shout.edited_at
-                        ? `Edited: ${dayjs
+                        ? ` ${dayjs
                             .utc(shout.edited_at)
                             .local()
                             .format("DD MMM YYYY, hh:mm A")}`
@@ -602,7 +602,7 @@ export default function ShoutOutFeed({
 
                 {/* =================== MESSAGE, IMAGE, TAGS, REACTIONS, COMMENTS =================== */}
                 {editingShoutoutId !== shout.id && (
-                  <p className="text-gray-700 text-sm mt-4 leading-relaxed">
+                  <p className="text-gray-800 text-sm mt-4 leading-relaxed">
                     {shout.edited_at && (
                       <span className="text-violet-600 font-medium mr-1">
                         (Edited)
@@ -616,7 +616,7 @@ export default function ShoutOutFeed({
                   <img
                     src={shout.image_url}
                     alt="shoutout"
-                    className="w-full max-w-lg rounded-lg mt-4 shadow-sm"
+                    className="w-40 max-w-lg rounded-lg mt-4 shadow-sm"
                   />
                 )}
 

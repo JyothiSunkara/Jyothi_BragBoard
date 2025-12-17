@@ -110,7 +110,7 @@ export default function Leaderboard() {
                 <Star className="text-purple-500" /> Gamified Global Leaderboard
               </h2>
 
-              {/*  Small Button - Right Corner */}
+              {/* Small Button - Right Corner */}
               <button
                 onClick={() => setShowPoints((prev) => !prev)}
                 className="text-sm px-3 py-1.5 rounded-lg border border-purple-300 text-purple-600 hover:bg-purple-50 transition"
@@ -141,26 +141,37 @@ export default function Leaderboard() {
               </div>
             )}
 
-            <div className="space-y-4">
-              {leaderboard.top_users_global.map((u, i) => (
-                <div
-                  key={i}
-                  className={`rounded-xl border p-4 flex justify-between items-center transition ${highlight(
-                    u.username
-                  )}`}
-                >
-                  <div className="flex items-center gap-3">
-                    {rankIcon(i)}
-                    <span className="font-semibold text-gray-800">
-                      {u.username}
+            {/* ===== Leaderboard Content ===== */}
+            {leaderboard.top_users_global.length === 0 ? (
+              <div className="h-[200px] flex items-center justify-center">
+                <p className="text-sm text-gray-500 bg-purple-50 border border-purple-100 rounded-lg p-4 text-center max-w-md">
+                  No leaderboard data available yet. Rankings will appear once
+                  team members start participating in appreciation activities.
+                  If this persists, please try logging in again.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {leaderboard.top_users_global.map((u, i) => (
+                  <div
+                    key={i}
+                    className={`rounded-xl border p-4 flex justify-between items-center transition ${highlight(
+                      u.username
+                    )}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {rankIcon(i)}
+                      <span className="font-semibold text-gray-800">
+                        {u.username}
+                      </span>
+                    </div>
+                    <span className="text-purple-600 font-bold">
+                      {u.score} pts
                     </span>
                   </div>
-                  <span className="text-purple-600 font-bold">
-                    {u.score} pts
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -170,23 +181,32 @@ export default function Leaderboard() {
             Top Contributors — Shoutouts Sent
           </h2>
 
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart
-              layout="vertical"
-              data={leaderboard.top_contributors_global.slice(0, 8)}
-              margin={{ left: 60 }}
-            >
-              <XAxis type="number" />
-              <YAxis dataKey="username" type="category" width={120} />
-              <Tooltip />
-              <Bar
-                dataKey="sent_count"
-                barSize={18}
-                fill="#1D4ED8"
-                radius={[5, 5, 5, 5]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          {leaderboard.top_contributors_global.length === 0 ? (
+            <div className="h-[260px] flex items-center justify-center">
+              <p className="text-sm text-gray-500 bg-blue-50 border border-blue-100 rounded-lg p-4 text-center max-w-md">
+                No contributor data available yet. Top contributors will appear
+                once team members start sending shoutouts.
+              </p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart
+                layout="vertical"
+                data={leaderboard.top_contributors_global.slice(0, 8)}
+                margin={{ left: 60 }}
+              >
+                <XAxis type="number" />
+                <YAxis dataKey="username" type="category" width={120} />
+                <Tooltip />
+                <Bar
+                  dataKey="sent_count"
+                  barSize={18}
+                  fill="#1D4ED8"
+                  radius={[5, 5, 5, 5]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* DEPARTMENT RANK */}
@@ -195,21 +215,29 @@ export default function Leaderboard() {
             Your Department Ranking
           </h2>
 
-          <div className="space-y-3">
-            {leaderboard.top_users_department.map((u, i) => (
-              <div
-                key={i}
-                className={`p-3 rounded-lg flex justify-between border ${highlight(
-                  u.username
-                )}`}
-              >
-                <span className="font-medium">{u.username}</span>
-                <span className="text-green-700 font-semibold">
-                  {u.score} pts
-                </span>
-              </div>
-            ))}
-          </div>
+          {leaderboard?.top_users_department?.length > 0 ? (
+            <div className="space-y-3">
+              {leaderboard.top_users_department.map((u, i) => (
+                <div
+                  key={i}
+                  className={`p-3 rounded-lg flex justify-between border ${highlight(
+                    u.username
+                  )}`}
+                >
+                  <span className="font-medium">{u.username}</span>
+                  <span className="text-green-700 font-semibold">
+                    {u.score} pts
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 bg-green-50 border border-green-100 rounded-lg p-4 text-center">
+              No ranking data available for your department yet. Rankings will
+              appear once team members start participating in appreciation
+              activities.
+            </p>
+          )}
         </div>
 
         {/* TOP DEPARTMENTS */}
@@ -218,24 +246,33 @@ export default function Leaderboard() {
             Top Departments
           </h2>
 
-          <ul className="space-y-3">
-            {leaderboard.top_departments.map((d, i) => (
-              <li
-                key={i}
-                className="p-3 rounded-lg flex justify-between items-center border bg-violet-50"
-              >
-                <div className="flex items-center gap-3">
-                  {i === 0 && <Crown className="text-yellow-500" size={18} />}
-                  {i === 1 && <Crown className="text-gray-400" size={18} />}
-                  {i === 2 && <Crown className="text-amber-700" size={18} />}
-                  <span className="font-medium">{d.department}</span>
-                </div>
-                <span className="text-violet-700 font-semibold">
-                  {d.shoutout_count}
-                </span>
-              </li>
-            ))}
-          </ul>
+          {leaderboard?.top_departments?.length > 0 ? (
+            <ul className="space-y-3">
+              {leaderboard.top_departments.map((d, i) => (
+                <li
+                  key={i}
+                  className="p-3 rounded-lg flex justify-between items-center border border-gray-200"
+                >
+                  <div className="flex items-center gap-3">
+                    {i === 0 && <Crown className="text-yellow-500" size={18} />}
+                    {i === 1 && <Crown className="text-gray-400" size={18} />}
+                    {i === 2 && <Crown className="text-amber-700" size={18} />}
+
+                    <span className="font-medium">{d.department}</span>
+                  </div>
+
+                  <span className="text-violet-700 font-semibold">
+                    {d.shoutout_count}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500 bg-violet-50 border border-violet-100 rounded-lg p-4 text-center">
+              No department data available yet.Top departments will appear here
+              once participation increases.
+            </p>
+          )}
         </div>
       </div>
     </div>

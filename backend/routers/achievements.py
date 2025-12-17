@@ -4,7 +4,7 @@ from typing import List
 from database import get_db
 from database_models import User, ShoutOut,Comment
 from auth import get_current_user
-from sqlalchemy import func,text,cast,Date
+from sqlalchemy import func,text,cast,Date,literal_column
 from datetime import datetime, timedelta,date
 from database_models import User, ShoutOut, ShoutOutReaction, Comment,ShoutOutTag
 
@@ -144,66 +144,85 @@ def get_user_achievements(db: Session = Depends(get_db), current_user: User = De
     return {"user": current_user.username,
              "achievements": achievements}
 
+
 # -------------------- LEADERBOARD --------------------
 @router.get("/leaderboard", response_model=dict)
-def get_leaderboard(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), top_n: int = 10):
-
-    # Count: Shoutouts Sent (giver)
+def get_leaderboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    top_n: int = 5
+):
+    # ----------------- Subqueries -----------------
     sent_sq = db.query(
         ShoutOut.giver_id.label("user_id"),
         func.count(ShoutOut.id).label("sent")
     ).filter(ShoutOut.is_deleted == False).group_by(ShoutOut.giver_id).subquery()
 
-    # Count: Shoutouts Received (receiver)
     received_sq = db.query(
         ShoutOut.receiver_id.label("user_id"),
         func.count(ShoutOut.id).label("received")
     ).filter(ShoutOut.is_deleted == False).group_by(ShoutOut.receiver_id).subquery()
 
-    # Count: Tagged In
     tagged_sq = db.query(
         ShoutOutTag.tagged_user_id.label("user_id"),
         func.count(ShoutOutTag.id).label("tagged")
-    ).join(ShoutOut, ShoutOut.id == ShoutOutTag.shoutout_id).filter(
-        ShoutOut.is_deleted == False
+    ).join(ShoutOut, ShoutOut.id == ShoutOutTag.shoutout_id
+    ).filter(ShoutOut.is_deleted == False
     ).group_by(ShoutOutTag.tagged_user_id).subquery()
 
-    # Count: Comments Made
     comments_sq = db.query(
         Comment.user_id.label("user_id"),
         func.count(Comment.id).label("comments")
-    ).join(ShoutOut, ShoutOut.id == Comment.shoutout_id).filter(
-        ShoutOut.is_deleted == False,
-        Comment.is_deleted == False
+    ).join(ShoutOut, ShoutOut.id == Comment.shoutout_id
+    ).filter(ShoutOut.is_deleted == False, Comment.is_deleted == False
     ).group_by(Comment.user_id).subquery()
 
-    # Gamified Score Query
-    leaderboard_query = (
-        db.query(
-            User.username,
-            User.department,
-            func.coalesce(sent_sq.c.sent, 0).label("sent"),
-            func.coalesce(received_sq.c.received, 0).label("received"),
-            func.coalesce(tagged_sq.c.tagged, 0).label("tagged"),
-            func.coalesce(comments_sq.c.comments, 0).label("comments"),
-            (
-                func.coalesce(sent_sq.c.sent, 0) * 10 +
-                func.coalesce(received_sq.c.received, 0) * 15 +
-                func.coalesce(tagged_sq.c.tagged, 0) * 5 +
-                func.coalesce(comments_sq.c.comments, 0) * 2
-            ).label("score")
-        )
-        .outerjoin(sent_sq, sent_sq.c.user_id == User.id)
-        .outerjoin(received_sq, received_sq.c.user_id == User.id)
-        .outerjoin(tagged_sq, tagged_sq.c.user_id == User.id)
-        .outerjoin(comments_sq, comments_sq.c.user_id == User.id)
-        .order_by(text("score DESC"))
-        .limit(top_n)
-        .all()
-    )
+    # ----------------- Gamified Leaderboard -----------------
+    all_users = db.query(
+        User.id,
+        User.username,
+        User.department,
+        func.coalesce(sent_sq.c.sent, 0).label("sent"),
+        func.coalesce(received_sq.c.received, 0).label("received"),
+        func.coalesce(tagged_sq.c.tagged, 0).label("tagged"),
+        func.coalesce(comments_sq.c.comments, 0).label("comments"),
+        (
+            func.coalesce(sent_sq.c.sent, 0) * 10 +
+            func.coalesce(received_sq.c.received, 0) * 15 +
+            func.coalesce(tagged_sq.c.tagged, 0) * 5 +
+            func.coalesce(comments_sq.c.comments, 0) * 2
+        ).label("score")
+    ).outerjoin(sent_sq, sent_sq.c.user_id == User.id
+    ).outerjoin(received_sq, received_sq.c.user_id == User.id
+    ).outerjoin(tagged_sq, tagged_sq.c.user_id == User.id
+    ).outerjoin(comments_sq, comments_sq.c.user_id == User.id
+    ).filter(
+        (
+            func.coalesce(sent_sq.c.sent, 0) * 10 +
+            func.coalesce(received_sq.c.received, 0) * 15 +
+            func.coalesce(tagged_sq.c.tagged, 0) * 5 +
+            func.coalesce(comments_sq.c.comments, 0) * 2
+        ) > 0
+    ).all()
 
-    # Convert to JSON
+    # Sort in Python and take top_n
+    all_users_sorted = sorted(all_users, key=lambda u: u.score, reverse=True)
     top_users_global = [
+        {
+            "username": u.username,
+            "department": u.department,
+            "sent_count": u.sent,
+            "received_count": u.received,
+            "tagged_count": u.tagged,
+            "comment_count": u.comments,
+            "score": u.score
+        }
+        for u in all_users_sorted[:top_n]
+    ]
+
+    # ----------------- Department-specific Leaderboard -----------------
+    dept_users = [u for u in all_users_sorted if u.department == current_user.department]
+    top_users_department = [
         {
             "username": u.username,
             "sent_count": u.sent,
@@ -212,29 +231,10 @@ def get_leaderboard(db: Session = Depends(get_db), current_user: User = Depends(
             "comment_count": u.comments,
             "score": u.score
         }
-        for u in leaderboard_query
+        for u in dept_users[:top_n]
     ]
 
-    # Department Filter
-    top_users_department = [u for u in top_users_global if db.query(User).filter(User.username == u["username"], User.department == current_user.department).first()]
-
-   #  Top Departments Based on SHOUTOUTS SENT (Giver Department)
-    top_departments = (
-    db.query(
-        ShoutOut.giver_department.label("department"),
-        func.count(ShoutOut.id).label("shoutout_count")
-    )
-    .filter(ShoutOut.is_deleted == False)
-    .filter(ShoutOut.giver_department.isnot(None))
-    .filter(ShoutOut.giver_department != "")
-    .group_by(ShoutOut.giver_department)
-    .having(func.count(ShoutOut.id) > 0)  # ensures departments with ZERO activity are excluded
-    .order_by(func.count(ShoutOut.id).desc())
-    .limit(3)
-    .all()
-)
-
-    # Top Contributors by SENT only
+    # ----------------- Top Contributors by Sent -----------------
     top_contributors_global = db.query(
         User.username,
         func.count(ShoutOut.id).label("sent_count")
@@ -244,16 +244,27 @@ def get_leaderboard(db: Session = Depends(get_db), current_user: User = Depends(
     ).order_by(func.count(ShoutOut.id).desc()
     ).limit(top_n).all()
 
+    # ----------------- Top Departments -----------------
+    top_departments = db.query(
+        ShoutOut.giver_department.label("department"),
+        func.count(ShoutOut.id).label("shoutout_count")
+    ).filter(
+        ShoutOut.is_deleted == False,
+        ShoutOut.giver_department.isnot(None),
+        ShoutOut.giver_department != ""
+    ).group_by(ShoutOut.giver_department
+    ).having(func.count(ShoutOut.id) > 0
+    ).order_by(func.count(ShoutOut.id).desc()
+    ).limit(3).all()
+
     return {
         "top_users_global": top_users_global,
         "top_contributors_global": [{"username": u.username, "sent_count": u.sent_count} for u in top_contributors_global],
         "top_users_department": top_users_department,
         "top_departments": [
-            {"department": d.department, "shoutout_count": d.shoutout_count}
-            for d in top_departments
+            {"department": d.department, "shoutout_count": d.shoutout_count} for d in top_departments
         ]
     }
-
 
 
 def get_user_streak(user_id: int, db: Session):

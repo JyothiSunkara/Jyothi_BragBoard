@@ -3,17 +3,15 @@ const Header = ({ user, onLogout, onMenuToggle }) => {
     <header className="bg-gradient-to-r from-white via-indigo-50 to-purple-50 backdrop-blur-sm shadow-md border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-
           {/* LEFT SECTION: Hamburger + Logo */}
           <div className="flex items-center space-x-3">
-
             {/* 🌟 Mobile Hamburger */}
             <button
-              className="md:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200"
+              className="md:hidden p-2 rounded-lg border border-gray-200 bg-white hover:bg-violet-50 transition"
               onClick={onMenuToggle}
             >
               <svg
-                className="w-6 h-6 text-gray-700"
+                className="w-5 h-5 text-violet-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -53,7 +51,6 @@ const Header = ({ user, onLogout, onMenuToggle }) => {
 
           {/* RIGHT SECTION: User Actions */}
           <div className="flex items-center space-x-4">
-
             {/* Department (hide on mobile) */}
             <div className="hidden md:flex items-center space-x-2">
               <span className="text-sm text-gray-600">Department:</span>

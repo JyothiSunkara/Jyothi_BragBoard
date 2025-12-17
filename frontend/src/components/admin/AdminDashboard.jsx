@@ -301,13 +301,17 @@ export default function AdminDashboard() {
               </div>
             </div>
           ) : (
-            <p className="text-gray-500">No department data available</p>
+            <p className="text-sm text-gray-500 bg-blue-50 border border-blue-100 rounded-lg p-4 text-center max-w-md">
+              No department data available yet.Top departments will appear here
+              once participation increases. If this persists, please try logging
+              in again.
+            </p>
           )}
         </div>
 
         {/* Activity Trend: last 30 days (bar chart) */}
         <div className="bg-white rounded-2xl shadow-sm p-6 md:col-span-1 lg:col-span-2">
-          <h2 className="text-xl font-semibold mb-5 bg-gradient-to-r from-indigo-600 to-blue-500 text-transparent bg-clip-text">
+          <h2 className="text-xl font-semibold text-violet-600 mb-4">
             Shoutouts — Last 30 days
           </h2>
           {stats.activityTrend.length ? (
@@ -339,7 +343,10 @@ export default function AdminDashboard() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-gray-500">No activity data available</p>
+            <p className="text-sm text-gray-500 bg-violet-50 border border-violet-100 rounded-lg p-4 text-center">
+              No activity data available. Shoutout activity will appear here
+              once interactions start.
+            </p>
           )}
         </div>
       </div>
@@ -377,7 +384,10 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500">No contributors found</p>
+          <p className="w-full text-sm text-gray-500 bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
+            No contributor data available yet. Top contributors will appear once
+            team members start sending shoutouts.
+          </p>
         )}
       </div>
 
@@ -416,7 +426,10 @@ export default function AdminDashboard() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No tagged users yet</p>
+          <p className="w-full text-sm text-gray-600 bg-pink-50 border border-pink-100 rounded-lg p-4 text-center">
+            No tagged users yet. Tag team members while creating a shout-out to
+            appreciate their contributions.
+          </p>
         )}
       </div>
     </div>

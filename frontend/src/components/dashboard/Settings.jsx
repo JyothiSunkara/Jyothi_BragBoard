@@ -83,7 +83,7 @@ const Settings = ({ currentUser }) => {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-indigo-50 to-purple-50 p-8">
+    <div className="p-8">
       <div className="max-w-3xl mx-auto bg-white/70 backdrop-blur-lg p-8 rounded-2xl shadow-lg border border-gray-100">
         <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 text-transparent bg-clip-text">
           Settings

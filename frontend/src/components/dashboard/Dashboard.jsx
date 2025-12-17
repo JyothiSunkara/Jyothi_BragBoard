@@ -69,7 +69,7 @@ const Dashboard = ({ user, onLogout }) => {
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-
+  // bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <Header

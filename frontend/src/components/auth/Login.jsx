@@ -1,43 +1,46 @@
-import { useState } from 'react';
-import apiService from '../../services/api';
+import { useState } from "react";
+import apiService from "../../services/api";
 
 const Login = ({ onSuccess, onToggleMode }) => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const { access_token, refresh_token } = await apiService.login(formData);
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
+      localStorage.setItem("access_token", access_token);
+      localStorage.setItem("refresh_token", refresh_token);
 
       const userProfile = await apiService.getUserProfile();
       onSuccess({ ...userProfile, access_token, refresh_token });
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Login failed');
+      setError(err.response?.data?.detail || err.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br 
-        from-blue-100 via-indigo-100 to-purple-200 py-12 px-6 sm:px-6 lg:px-8 animate-fadeIn">
-
+    <div
+      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br 
+        from-blue-100 via-indigo-100 to-purple-200 py-12 px-6 sm:px-6 lg:px-8 animate-fadeIn"
+    >
       {/* Branding */}
       <div className="text-center mb-8 animate-fadeIn">
-        <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r 
-          from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+        <h1
+          className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r 
+          from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight"
+        >
           BragBoard
         </h1>
         <p className="text-gray-700 mt-2 text-sm sm:text-base">
@@ -47,15 +50,18 @@ const Login = ({ onSuccess, onToggleMode }) => {
 
       {/* Form Card */}
       <div className="max-w-md w-full">
-        <div className="bg-white/70 backdrop-blur-xl shadow-2xl rounded-3xl 
+        <div
+          className="bg-white/70 backdrop-blur-xl shadow-2xl rounded-3xl 
             p-6 sm:p-10 border border-white/30 transition-transform 
-            transform hover:scale-[1.01] duration-300">
-
+            transform hover:scale-[1.01] duration-300"
+        >
           {/* Header */}
           <div className="text-center mb-8 sm:mb-10">
-            <div className="mx-auto h-12 w-12 sm:h-14 sm:w-14 bg-gradient-to-r 
+            <div
+              className="mx-auto h-12 w-12 sm:h-14 sm:w-14 bg-gradient-to-r 
                 from-indigo-500 to-purple-600 rounded-full flex items-center 
-                justify-center shadow-lg mb-4 sm:mb-5">
+                justify-center shadow-lg mb-4 sm:mb-5"
+            >
               <svg
                 className="h-6 w-6 sm:h-7 sm:w-7 text-white"
                 fill="none"
@@ -76,7 +82,9 @@ const Login = ({ onSuccess, onToggleMode }) => {
             </h2>
 
             <p className="mt-2 text-sm text-gray-600">
-              Sign in to your <span className="font-medium text-indigo-600">BragBoard</span> account
+              Sign in to your{" "}
+              <span className="font-medium text-indigo-600">BragBoard</span>{" "}
+              account
             </p>
           </div>
 
@@ -148,7 +156,7 @@ const Login = ({ onSuccess, onToggleMode }) => {
                     ></path>
                   </svg>
                 )}
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? "Signing in..." : "Sign in"}
               </button>
             </div>
 
@@ -158,11 +166,22 @@ const Login = ({ onSuccess, onToggleMode }) => {
                 onClick={onToggleMode}
                 className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
               >
-                Don’t have an account? <span className="underline">Sign up</span>
+                Don’t have an account?{" "}
+                <span className="underline">Sign up</span>
               </button>
             </div>
-
           </form>
+          <div className="mt-6 p-4 bg-white/60 border border-white/40 rounded-2xl shadow-md animate-fadeIn">
+            <h3 className="text-center text-gray-800 font-semibold mb-2">
+              Demo Credentials
+            </h3>
+            <p className="text-sm text-gray-700 text-center">
+              <span className="font-medium">Email:</span> demo@bragboard.com
+            </p>
+            <p className="text-sm text-gray-700 text-center">
+              <span className="font-medium">Password:</span> Demo@123
+            </p>
+          </div>
         </div>
       </div>
     </div>

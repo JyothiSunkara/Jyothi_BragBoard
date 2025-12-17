@@ -19,7 +19,8 @@ class ApiService {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
     });
-    if (!res.ok) throw new Error((await res.json()).detail || "Registration failed");
+    if (!res.ok)
+      throw new Error((await res.json()).detail || "Registration failed");
     return await res.json();
   }
 
@@ -37,7 +38,8 @@ class ApiService {
     const res = await fetch(`${API_BASE_URL}/users/profile`, {
       headers: this.getHeaders(),
     });
-    if (!res.ok) throw new Error((await res.json()).detail || "Failed to fetch profile");
+    if (!res.ok)
+      throw new Error((await res.json()).detail || "Failed to fetch profile");
     return await res.json();
   }
 
@@ -55,22 +57,42 @@ class ApiService {
     const formData = new FormData();
     formData.append("image", file);
 
-    const res = await axios.post(`${API_BASE_URL}/shoutouts/upload-image`, formData, {
-      headers: {
-        Authorization: `Bearer ${this.getToken()}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const res = await axios.post(
+      `${API_BASE_URL}/shoutouts/upload-image`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${this.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     return res.data.image_url;
   }
 
   // -------------------- CREATE SHOUTOUT --------------------
-  async createShoutout({ title, message, receiver_id, tagged_user_ids = [], category, is_public, imageFile }) {
+  async createShoutout({
+    title,
+    message,
+    receiver_id,
+    tagged_user_ids = [],
+    category,
+    is_public,
+    imageFile,
+  }) {
     let image_url = null;
     if (imageFile) image_url = await this.uploadImage(imageFile);
 
-    const payload = { title, message, receiver_id, tagged_user_ids, category, is_public, image_url };
+    const payload = {
+      title,
+      message,
+      receiver_id,
+      tagged_user_ids,
+      category,
+      is_public,
+      image_url,
+    };
 
     const res = await axios.post(`${API_BASE_URL}/shoutouts/create`, payload, {
       headers: { Authorization: `Bearer ${this.getToken()}` },
@@ -81,10 +103,14 @@ class ApiService {
 
   // -------------------- GET SHOUTOUTS (FEED) --------------------
   async getShoutouts({ department = "all", skip = 0, limit = 50 } = {}) {
-    const res = await fetch(`${API_BASE_URL}/shoutouts/feed?department=${department}&skip=${skip}&limit=${limit}`, {
-      headers: this.getHeaders(),
-    });
-    if (!res.ok) throw new Error((await res.json()).detail || "Failed to fetch shoutouts");
+    const res = await fetch(
+      `${API_BASE_URL}/shoutouts/feed?department=${department}&skip=${skip}&limit=${limit}`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+    if (!res.ok)
+      throw new Error((await res.json()).detail || "Failed to fetch shoutouts");
     return await res.json();
   }
 
@@ -99,14 +125,17 @@ class ApiService {
     }
     return await res.json();
   }
-  
 
   // -------------------- SEARCH USERS --------------------
   async searchUsers({ department = "all", search = "" } = {}) {
-    const res = await fetch(`${API_BASE_URL}/shoutouts/users/search?department=${department}&search=${search}`, {
-      headers: this.getHeaders(),
-    });
-    if (!res.ok) throw new Error((await res.json()).detail || "Failed to search users");
+    const res = await fetch(
+      `${API_BASE_URL}/shoutouts/users/search?department=${department}&search=${search}`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+    if (!res.ok)
+      throw new Error((await res.json()).detail || "Failed to search users");
     return await res.json();
   }
 
@@ -114,19 +143,19 @@ class ApiService {
   async addReaction(shoutout_id, reaction_type) {
     const res = await axios.post(
       `${API_BASE_URL}/reactions/${shoutout_id}`,
-       { reaction_type },
-       { headers: this.getHeaders() }
+      { reaction_type },
+      { headers: this.getHeaders() }
     );
     return res.data;
   }
 
   async getReactionCounts(shoutout_id) {
     const res = await axios.get(`${API_BASE_URL}/reactions/${shoutout_id}`, {
-      headers: this.getHeaders()
+      headers: this.getHeaders(),
     });
     return res.data;
   }
-  
+
   async getReactedUsers(shoutout_id) {
     const res = await axios.get(
       `${API_BASE_URL}/reactions/${shoutout_id}/users`,
@@ -134,56 +163,59 @@ class ApiService {
     );
     return res.data;
   }
-// --------------------- COMMENTS -------------------------
-async getComments(shoutoutId) {
-  const res = await fetch(`${API_BASE_URL}/comments/${shoutoutId}`, {
-    headers: this.getHeaders(),
-  });
-  if (!res.ok) throw new Error("Failed to fetch comments");
-  return res.json();
-}
+  // --------------------- COMMENTS -------------------------
+  async getComments(shoutoutId) {
+    const res = await fetch(`${API_BASE_URL}/comments/${shoutoutId}`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error("Failed to fetch comments");
+    return res.json();
+  }
 
-async addComment(shoutoutId, content) {
-  const res = await fetch(`${API_BASE_URL}/comments/${shoutoutId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...this.getHeaders(),
-    },
-    body: JSON.stringify({ content }),
-  });
-  if (!res.ok) throw new Error("Failed to add comment");
-  return res.json();
-}
+  async addComment(shoutoutId, content) {
+    const res = await fetch(`${API_BASE_URL}/comments/${shoutoutId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...this.getHeaders(),
+      },
+      body: JSON.stringify({ content }),
+    });
+    if (!res.ok) throw new Error("Failed to add comment");
+    return res.json();
+  }
 
-async deleteComment(comment_id) {
-  const res = await fetch(`${API_BASE_URL}/comments/${comment_id}`, {
-    method: "DELETE",
-    headers: this.getHeaders(),
-  });
-  return res.json();
-}
+  async deleteComment(comment_id) {
+    const res = await fetch(`${API_BASE_URL}/comments/${comment_id}`, {
+      method: "DELETE",
+      headers: this.getHeaders(),
+    });
+    return res.json();
+  }
 
-async updateComment(commentId, content) {
-  return fetch(`${API_BASE_URL}/comments/${commentId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...this.getHeaders(),
-    },
-    body: JSON.stringify({ content }),
-  }).then((res) => res.json());
-}
-
+  async updateComment(commentId, content) {
+    return fetch(`${API_BASE_URL}/comments/${commentId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...this.getHeaders(),
+      },
+      body: JSON.stringify({ content }),
+    }).then((res) => res.json());
+  }
 
   // -------------------- UPDATING SHOUTOUT --------------------
   async updateShoutout(shoutout_id, data) {
-    const res = await axios.put(`${API_BASE_URL}/shoutouts/${shoutout_id}`, data, {
-      headers: this.getHeaders(),
-    });
+    const res = await axios.put(
+      `${API_BASE_URL}/shoutouts/${shoutout_id}`,
+      data,
+      {
+        headers: this.getHeaders(),
+      }
+    );
     return res.data;
   }
-  
+
   // -------------------- DELETE SHOUTOUT --------------------
   async deleteShoutout(shoutout_id) {
     const res = await axios.delete(`${API_BASE_URL}/shoutouts/${shoutout_id}`, {
@@ -197,21 +229,27 @@ async updateComment(commentId, content) {
     const res = await fetch(`${API_BASE_URL}/shoutouts/dashboard/stats`, {
       headers: this.getHeaders(),
     });
-    if (!res.ok) throw new Error((await res.json()).detail || "Failed to fetch dashboard stats");
+    if (!res.ok)
+      throw new Error(
+        (await res.json()).detail || "Failed to fetch dashboard stats"
+      );
     return await res.json();
   }
 
-// -------------------- UPDATE USER ACCOUNT --------------------
-async updateUser(userId, updatedData) {
-  const res = await axios.put(`${API_BASE_URL}/users/${userId}`, updatedData, {
-    headers: {
-      Authorization: `Bearer ${this.getToken()}`,
-      "Content-Type": "application/json",
-    },
-  });
-  return res.data;
-}
-
+  // -------------------- UPDATE USER ACCOUNT --------------------
+  async updateUser(userId, updatedData) {
+    const res = await axios.put(
+      `${API_BASE_URL}/users/${userId}`,
+      updatedData,
+      {
+        headers: {
+          Authorization: `Bearer ${this.getToken()}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return res.data;
+  }
 
   // -------------------- DELETE USER ACCOUNT --------------------
   async deleteUser(userId) {
@@ -222,7 +260,6 @@ async updateUser(userId, updatedData) {
     return res.data;
   }
 
-
   // -------------------- ADMIN DASHBOARD --------------------
 
   async getAdminStats() {
@@ -230,8 +267,8 @@ async updateUser(userId, updatedData) {
       headers: this.getHeaders(),
     });
     return res.data;
-  }  
- 
+  }
+
   async getTopContributors() {
     const res = await axios.get(`${API_BASE_URL}/admin/top-contributors`, {
       headers: this.getHeaders(),
@@ -246,112 +283,117 @@ async updateUser(userId, updatedData) {
     return res.data;
   }
 
-async getTopDepartments(limit = 8) {
-  const res = await axios.get(`${API_BASE_URL}/admin/top-departments?limit=${limit}`, {
-    headers: this.getHeaders(),
-  });
-  return res.data;
-}
+  async getTopDepartments(limit = 8) {
+    const res = await axios.get(
+      `${API_BASE_URL}/admin/top-departments?limit=${limit}`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+    return res.data;
+  }
 
-async getActivityTrend(days = 30) {
-  const res = await axios.get(`${API_BASE_URL}/admin/activity-trend?days=${days}`, {
-    headers: this.getHeaders(),
-  });
-  return res.data;
-}
+  async getActivityTrend(days = 30) {
+    const res = await axios.get(
+      `${API_BASE_URL}/admin/activity-trend?days=${days}`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+    return res.data;
+  }
 
   // -------------------- REPORT MANAGEMENT --------------------
   async reportShoutout(shoutout_id, reason) {
     const res = await axios.post(
-      `${API_BASE_URL}/shoutouts/report/${shoutout_id}?reason=${encodeURIComponent(reason)}`,
+      `${API_BASE_URL}/shoutouts/report/${shoutout_id}?reason=${encodeURIComponent(
+        reason
+      )}`,
       {}, // Empty body
       { headers: this.getHeaders() }
     );
     return res.data;
   }
-  
-  
 
-async getReports(filter = "all") {
-  const res = await axios.get(
-    `${API_BASE_URL}/admin/reports?filter=${filter}`,
-    { headers: this.getHeaders() }
-  );
-  return res.data;
-}
+  async getReports(filter = "all") {
+    const res = await axios.get(
+      `${API_BASE_URL}/admin/reports?filter=${filter}`,
+      { headers: this.getHeaders() }
+    );
+    return res.data;
+  }
 
+  async resolveReport(report_id) {
+    const res = await axios.post(
+      `${API_BASE_URL}/admin/reports/${report_id}/resolve`,
+      {},
+      { headers: this.getHeaders() }
+    );
+    return res.data;
+  }
 
-async resolveReport(report_id) {
-  const res = await axios.post(
-    `${API_BASE_URL}/admin/reports/${report_id}/resolve`,
-    {},
-    { headers: this.getHeaders() }
-  );
-  return res.data;
-}
+  async getShoutout(shoutout_id) {
+    const res = await axios.get(`${API_BASE_URL}/shoutouts/${shoutout_id}`, {
+      headers: this.getHeaders(),
+    });
+    return res.data;
+  }
 
-async getShoutout(shoutout_id) {
-  const res = await axios.get(
-    `${API_BASE_URL}/shoutouts/${shoutout_id}`,
-    { headers: this.getHeaders() }
-  );
-  return res.data;
-}
+  // -------------------- ADMIN ACTIONS --------------------
+  async adminDeleteShoutout(shoutout_id) {
+    const res = await axios.delete(
+      `${API_BASE_URL}/admin/shoutout/${shoutout_id}/admin-delete`,
+      { headers: this.getHeaders() }
+    );
+    return res.data;
+  }
 
-// -------------------- ADMIN ACTIONS --------------------
-async adminDeleteShoutout(shoutout_id) {
-  const res = await axios.delete(
-    `${API_BASE_URL}/admin/shoutout/${shoutout_id}/admin-delete`,
-    { headers: this.getHeaders() }
-  );
-  return res.data;
-}
+  async adminDeleteComment(comment_id) {
+    const res = await axios.delete(
+      `${API_BASE_URL}/admin/comment/${comment_id}`,
+      { headers: this.getHeaders() }
+    );
+    return res.data;
+  }
 
-async adminDeleteComment(comment_id) {
-  const res = await axios.delete(
-    `${API_BASE_URL}/admin/comment/${comment_id}`,
-    { headers: this.getHeaders() }
-  );
-  return res.data;
-}
+  // -------------------- EXPORT REPORTS --------------------
+  async exportShoutoutsCSV() {
+    const res = await fetch(`${API_BASE_URL}/admin/export/shoutouts/csv`, {
+      headers: this.getHeaders(),
+    });
 
+    if (!res.ok) throw new Error("Failed to export CSV");
+    return res.blob(); // return blob for download
+  }
 
-// -------------------- EXPORT REPORTS --------------------
-async exportShoutoutsCSV() {
-  const res = await fetch(`${API_BASE_URL}/admin/export/shoutouts/csv`, {
-    headers: this.getHeaders(),
-  });
+  async exportShoutoutsPDF() {
+    const res = await fetch(`${API_BASE_URL}/admin/export/shoutouts/pdf`, {
+      headers: this.getHeaders(),
+    });
 
-  if (!res.ok) throw new Error("Failed to export CSV");
-  return res.blob(); // return blob for download
-}
+    if (!res.ok) throw new Error("Failed to export PDF");
+    return res.blob(); // return blob for download
+  }
 
-async exportShoutoutsPDF() {
-  const res = await fetch(`${API_BASE_URL}/admin/export/shoutouts/pdf`, {
-    headers: this.getHeaders(),
-  });
+  // -------------------- ACHIEVEMENTS --------------------
+  async getAchievements() {
+    const res = await fetch(`${API_BASE_URL}/achievements/`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error("Failed to fetch achievements");
+    return await res.json();
+  }
 
-  if (!res.ok) throw new Error("Failed to export PDF");
-  return res.blob(); // return blob for download
-}
-
-// -------------------- ACHIEVEMENTS --------------------
-async getAchievements() {
-  const res = await fetch(`${API_BASE_URL}/achievements/`, {
-    headers: this.getHeaders(),
-  });
-  if (!res.ok) throw new Error("Failed to fetch achievements");
-  return await res.json();
-}
-
-// -------------------- LEADERBOARD --------------------
-async getLeaderboard(top_n = 10) {
-  const res = await fetch(`${API_BASE_URL}/achievements/leaderboard?top_n=${top_n}`, {
-    headers: this.getHeaders(),
-  });
-  if (!res.ok) throw new Error("Failed to fetch leaderboard");
-  return await res.json();
-}
-
+  // -------------------- LEADERBOARD --------------------
+  async getLeaderboard(top_n = 5) {
+    const res = await fetch(
+      `${API_BASE_URL}/achievements/leaderboard?top_n=${top_n}`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to fetch leaderboard");
+    return await res.json();
+  }
 }
 export default new ApiService();

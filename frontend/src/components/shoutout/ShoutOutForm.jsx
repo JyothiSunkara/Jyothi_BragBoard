@@ -106,10 +106,10 @@ const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
   };
 
   return (
-    <div className="flex-1 min-h-screen bg-gradient-to-br from-white via-indigo-50 to-purple-50">
+    <div className="flex-1">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
         {/* FORM CARD */}
-        <div className="bg-white-100 rounded-2xl shadow-md border border-gray-200 p-5 sm:p-6">
+        <div className="bg-white/90 rounded-2xl shadow-md border border-gray-200 p-5 sm:p-6">
           <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-700 via-pink-500 to-indigo-500 text-transparent bg-clip-text">
             Create Shout-Out
           </h2>
@@ -125,7 +125,7 @@ const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
 
           {/* Message */}
           <textarea
-            className="w-full h-36 p-4 border rounded-lg hover:border-violet-500 mb-4 resize-none bg-white shadow-sm"
+            className="w-full h-36 p-4 border border-gray-400 rounded-lg hover:border-violet-500 mb-4 resize-none bg-white shadow-sm"
             placeholder="Write your shoutout..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -134,7 +134,7 @@ const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
           {/* Receiver */}
           <div className="relative mb-4" ref={receiverRef}>
             <button
-              className="w-full text-left p-3 border rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm"
+              className="w-full text-left p-3 border border-gray-400 rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm"
               onClick={() => setShowReceiverDropdown(!showReceiverDropdown)}
             >
               {receiver ? receiver.username : "Select Receiver"}
@@ -162,7 +162,7 @@ const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
           {/* Tag People */}
           <div className="relative mb-4" ref={tagRef}>
             <button
-              className="w-full text-left p-3 border rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm flex flex-wrap gap-1 items-center min-h-[2.5rem]"
+              className="w-full text-left p-3 border border-gray-400 rounded-lg hover:border-violet-500 focus:outline-none bg-white shadow-sm flex flex-wrap gap-1 items-center min-h-[2.5rem]"
               onClick={() => setShowTagDropdown(!showTagDropdown)}
             >
               {taggedUsers.length === 0 ? (
@@ -217,7 +217,7 @@ const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
 
           {/* Image Upload */}
           <div className="mb-4">
-            <label className="cursor-pointer inline-flex items-center gap-2 p-3 border rounded-lg hover:border-violet-500 bg-white shadow-sm">
+            <label className="cursor-pointer inline-flex items-center gap-2 p-3 border border-gray-400 rounded-lg hover:border-violet-500 bg-white shadow-sm">
               <ImageIcon size={20} />
               <span>Upload Image</span>
               <input
@@ -251,7 +251,7 @@ const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
           {/* Category */}
           <div className="mb-4">
             <select
-              className="w-full p-3 border rounded-lg focus:outline-none hover:border-violet-500 bg-white shadow-sm"
+              className="w-full p-3 border border-gray-400 rounded-lg focus:outline-none hover:border-violet-500 bg-white shadow-sm"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
@@ -270,7 +270,7 @@ const ShoutOutForm = ({ currentUser, onShoutoutPosted }) => {
           {/* Visibility */}
           <div className="mb-6">
             <select
-              className="w-full p-3 border rounded-lg focus:outline-none hover:border-violet-500 bg-white shadow-sm"
+              className="w-full p-3 border border-gray-400 rounded-lg focus:outline-none hover:border-violet-500 bg-white shadow-sm"
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
             >

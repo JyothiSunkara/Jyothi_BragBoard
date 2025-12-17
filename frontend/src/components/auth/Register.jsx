@@ -1,55 +1,58 @@
-import { useState } from 'react';
-import apiService from '../../services/api';
+import { useState } from "react";
+import apiService from "../../services/api";
 
 const Register = ({ onSuccess, onToggleMode }) => {
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    department: '',
-    role: 'employee',
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    department: "",
+    role: "employee",
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setLoading(false);
       return;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError("Password must be at least 6 characters long");
       setLoading(false);
       return;
     }
 
     try {
       const { confirmPassword, ...registrationData } = formData;
-      const registerResponse = await apiService.register(registrationData);
-      localStorage.setItem('access_token', registerResponse.access_token);
-      localStorage.setItem('refresh_token', registerResponse.refresh_token);
+      await apiService.register(registrationData);
 
-      const userProfile = await apiService.getUserProfile();
-      const userData = { ...registerResponse, ...userProfile };
-      onSuccess(userData);
+      setSuccessMessage("Registered successfully! Redirecting to login...");
+
+      // Redirect after a short delay (e.g., 2–3 seconds)
+      setTimeout(() => {
+        setSuccessMessage("");
+        onToggleMode(); // Switch to login
+      }, 2500);
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.message || 'Failed to register');
+      console.error("Registration error:", err);
+      setError(err.message || "Failed to register");
     } finally {
       setLoading(false);
     }
@@ -57,7 +60,6 @@ const Register = ({ onSuccess, onToggleMode }) => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200 py-12 px-4 sm:px-6 lg:px-8 animate-fadeIn">
-
       {/* Branding */}
       <div className="text-center mb-8 animate-fadeIn">
         <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
@@ -70,7 +72,6 @@ const Register = ({ onSuccess, onToggleMode }) => {
 
       {/* Form Card */}
       <div className="max-w-md w-full bg-white/70 backdrop-blur-xl shadow-2xl rounded-3xl p-6 sm:p-8 md:p-10 border border-white/30 transition-transform transform hover:scale-[1.01] duration-300">
-
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="mx-auto h-14 w-14 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
@@ -89,9 +90,12 @@ const Register = ({ onSuccess, onToggleMode }) => {
               />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Create Account</h2>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Create Account
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Join <span className="font-medium text-indigo-600">BragBoard</span> and start sharing shout-outs!
+            Join <span className="font-medium text-indigo-600">BragBoard</span>{" "}
+            and start sharing shout-outs!
           </p>
         </div>
 
@@ -100,6 +104,12 @@ const Register = ({ onSuccess, onToggleMode }) => {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-md p-3 text-sm">
               {error}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 text-green-700 rounded-md p-3 text-sm text-center">
+              {successMessage}
             </div>
           )}
 
@@ -228,7 +238,7 @@ const Register = ({ onSuccess, onToggleMode }) => {
                   ></path>
                 </svg>
               ) : null}
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </div>
 
@@ -239,7 +249,8 @@ const Register = ({ onSuccess, onToggleMode }) => {
               onClick={onToggleMode}
               className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
             >
-              Already have an account? <span className="underline">Sign in</span>
+              Already have an account?{" "}
+              <span className="underline">Sign in</span>
             </button>
           </div>
         </form>

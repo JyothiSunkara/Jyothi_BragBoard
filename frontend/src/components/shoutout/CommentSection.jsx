@@ -212,7 +212,7 @@ export default function CommentSection({
 
       {/* NEW COMMENT */}
       <div className="flex gap-2 items-start mt-4">
-        <div className="w-9 h-9 rounded-full bg-violet-300 flex items-center justify-center text-white shrink-0">
+        <div className="w-9 h-9 rounded-full bg-violet-200 flex items-center justify-center text-white shrink-0">
           👤
         </div>
         <input

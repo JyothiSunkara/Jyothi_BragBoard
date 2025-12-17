@@ -40,7 +40,6 @@ const Auth = ({ onAuthSuccess }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-200 via-white to-purple-300 flex items-center justify-center px-6 sm:px-12 lg:px-24 animate-fadeIn">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-10 lg:gap-12">
-
           {/* Left Section */}
           <div className="max-w-lg order-1 lg:order-none">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
@@ -68,6 +67,9 @@ const Auth = ({ onAuthSuccess }) => {
               >
                 Register
               </button>
+              <p className="mt-4 text-sm text-gray-500 text-center">
+                Demo access available — click Login to explore
+              </p>
             </div>
           </div>
 
@@ -78,8 +80,8 @@ const Auth = ({ onAuthSuccess }) => {
                 “Give Shout-Outs That Matter!”
               </h2>
               <p className="text-gray-600">
-                Recognize your colleagues’ hard work, spread positivity, and make
-                your team stronger — one shout-out at a time.
+                Recognize your colleagues’ hard work, spread positivity, and
+                make your team stronger — one shout-out at a time.
               </p>
             </div>
           </div>
@@ -89,9 +91,15 @@ const Auth = ({ onAuthSuccess }) => {
   }
 
   return mode === "login" ? (
-    <Login onSuccess={handleAuthSuccess} onToggleMode={() => setMode("register")} />
+    <Login
+      onSuccess={handleAuthSuccess}
+      onToggleMode={() => setMode("register")}
+    />
   ) : (
-    <Register onSuccess={handleAuthSuccess} onToggleMode={() => setMode("login")} />
+    <Register
+      onSuccess={handleAuthSuccess}
+      onToggleMode={() => setMode("login")}
+    />
   );
 };
 
