@@ -9,23 +9,38 @@ from database import get_db
 from database_models import ShoutOut, User, ShoutOutTag, ShoutOutReaction, Comment, ShoutOutReport
 from auth import get_current_user
 from schemas import UserOut, ShoutOutCreate, ShoutOutResponse, ShoutOutUpdate, VisibilityEnum
+import cloudinary
+import cloudinary.uploader
+from config import CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 
 router = APIRouter(prefix="/shoutouts", tags=["shoutouts"])
 
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# UPLOAD_FOLDER = "uploads"
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-# -------------------- UPLOAD IMAGE --------------------
+# # -------------------- UPLOAD IMAGE --------------------
+# @router.post("/upload-image")
+# async def upload_image(image: UploadFile = File(...)):
+#     ext = image.filename.split(".")[-1]
+#     filename = f"{uuid.uuid4()}.{ext}"
+#     file_path = os.path.join(UPLOAD_FOLDER, filename)
+#     with open(file_path, "wb") as buffer:
+#         shutil.copyfileobj(image.file, buffer)
+#     return {"image_url": f"/{UPLOAD_FOLDER}/{filename}"}
+
+
+# # -------------------- UPLOAD IMAGE --------------------
+cloudinary.config(
+    cloud_name=CLOUDINARY_CLOUD_NAME,
+    api_key=CLOUDINARY_API_KEY,
+    api_secret=CLOUDINARY_API_SECRET
+)
+
 @router.post("/upload-image")
 async def upload_image(image: UploadFile = File(...)):
-    ext = image.filename.split(".")[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
-    return {"image_url": f"/{UPLOAD_FOLDER}/{filename}"}
-
+    result = cloudinary.uploader.upload(image.file)
+    return {"image_url": result["secure_url"]}
 
 # -------------------- DASHBOARD STATS --------------------
 @router.get("/dashboard/stats")
@@ -119,7 +134,8 @@ def create_shoutout(
             tagged_users_objs.append(tagged_user)
     db.commit()
 
-    image_url = f"http://127.0.0.1:8000{new_shoutout.image_url}" if new_shoutout.image_url else None
+    # image_url = f"http://127.0.0.1:8000{new_shoutout.image_url}" if new_shoutout.image_url else None
+    image_url = new_shoutout.image_url if new_shoutout.image_url else None
 
     return ShoutOutResponse(
         id=new_shoutout.id,
@@ -187,7 +203,8 @@ def update_shoutout(
     if not is_changed:
         receiver = db.query(User).filter(User.id == existing.receiver_id).first()
         tagged_users = [UserOut.model_validate(t.tagged_user) for t in existing.tags]
-        image_url = f"http://127.0.0.1:8000{existing.image_url}" if existing.image_url else None
+        # image_url = f"http://127.0.0.1:8000{existing.image_url}" if existing.image_url else None
+        image_url = existing.image_url if existing.image_url else None
 
         return ShoutOutResponse(
             id=existing.id,
@@ -219,7 +236,8 @@ def update_shoutout(
     # Re-fetch related data
     receiver = db.query(User).filter(User.id == existing.receiver_id).first()
     tagged_users = [UserOut.model_validate(t.tagged_user) for t in existing.tags]
-    image_url = f"http://127.0.0.1:8000{existing.image_url}" if existing.image_url else None
+    # image_url = f"http://127.0.0.1:8000{existing.image_url}" if existing.image_url else None
+    image_url = existing.image_url if existing.image_url else None
 
     return ShoutOutResponse(
         id=existing.id,
@@ -331,7 +349,9 @@ def get_shoutouts_feed(
             ))
         ):
             tagged_users = [UserOut.model_validate(t.tagged_user) for t in s.tags]
-            image_url = f"http://127.0.0.1:8000{s.image_url}" if s.image_url else None
+            # image_url = f"http://127.0.0.1:8000{s.image_url}" if s.image_url else None
+            image_url = s.image_url if s.image_url else None
+
             results.append(ShoutOutResponse(
                 id=s.id,
                 giver_id=s.giver_id,
@@ -414,7 +434,8 @@ def get_my_shoutouts(
         my_reaction = next((r.reaction_type for r in reactions if r.user_id == current_user.id), None)
 
         tagged_users = [UserOut.model_validate(t.tagged_user) for t in s.tags]
-        image_url = f"http://127.0.0.1:8000{s.image_url}" if s.image_url else None
+        # image_url = f"http://127.0.0.1:8000{s.image_url}" if s.image_url else None
+        image_url = s.image_url if s.image_url else None
 
         result.append({
             "id": s.id,

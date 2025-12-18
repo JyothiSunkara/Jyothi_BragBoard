@@ -11,14 +11,22 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="BragBoard API", version="1.0.0")
 
-origins = ["http://localhost:3000"]
+# origins = ["http://localhost:3000"]
+# origins = ["https://bragboard-frontend.vercel.app"]
+origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://bragboard-frontend.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 def read_root():
@@ -33,7 +41,7 @@ def health_check(db: Session = Depends(get_db)):
     except Exception as e:
         return {"status": "unhealthy", "database": str(e)}
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(users.router)
 app.include_router(shoutouts.router)
