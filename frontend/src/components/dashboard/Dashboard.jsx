@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import MainContent from "./MainContent";
+import ApiService from "../../services/api";
 
 const Dashboard = ({ user, onLogout }) => {
   const [activeView, setActiveView] = useState("feed");
@@ -41,7 +42,7 @@ const Dashboard = ({ user, onLogout }) => {
       try {
         const token = localStorage.getItem("access_token");
         const res = await fetch(
-          "http://localhost:8000/shoutouts/feed?department=all",
+          `${API_BASE_URL}/shoutouts/feed?department=all`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -76,6 +77,7 @@ const Dashboard = ({ user, onLogout }) => {
         user={currentUser}
         onLogout={onLogout}
         onMenuToggle={toggleSidebar}
+        setActiveView={setActiveView}
       />
 
       <div className="flex flex-1 overflow-hidden">

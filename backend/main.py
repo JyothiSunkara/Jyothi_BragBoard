@@ -17,12 +17,13 @@ origins = [
     "http://localhost:5173",
     "http://localhost:3000",
     "https://bragboard-frontend.vercel.app",
+    "https://bragboard-frontend-loxwr876e-jyothisunkaras-projects.vercel.app",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -6,13 +6,14 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
   const [message, setMessage] = useState(shoutout.message || "");
   const [allUsers, setAllUsers] = useState([]);
   const [taggedUsers, setTaggedUsers] = useState(
-    shoutout.tagged_users?.map(u => ({ id: u.id, username: u.username })) || []
+    shoutout.tagged_users?.map((u) => ({ id: u.id, username: u.username })) ||
+      []
   );
   const [category, setCategory] = useState(shoutout.category || "");
   const [visibility, setVisibility] = useState(shoutout.is_public || "public");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(
-    shoutout.image_url ? `http://127.0.0.1:8000${shoutout.image_url}` : null
+    shoutout.image_url ? `${API_BASE_URL}${shoutout.image_url}` : null
   );
   const [showTagDropdown, setShowTagDropdown] = useState(false);
 
@@ -22,8 +23,10 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
     message: shoutout.message || "",
     category: shoutout.category || "",
     is_public: shoutout.is_public || "public",
-    tagged_user_ids: shoutout.tagged_users?.map(u => u.id) || [],
-    image_url: shoutout.image_url ? `http://127.0.0.1:8000${shoutout.image_url}` : null,
+    tagged_user_ids: shoutout.tagged_users?.map((u) => u.id) || [],
+    image_url: shoutout.image_url
+      ? `${API_BASE_URL}${shoutout.image_url}`
+      : null,
   };
 
   const isChanged = () => {
@@ -31,7 +34,7 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
       message,
       category,
       is_public: visibility,
-      tagged_user_ids: taggedUsers.map(u => u.id),
+      tagged_user_ids: taggedUsers.map((u) => u.id),
       image_url: imagePreview,
     };
     return JSON.stringify(currentData) !== JSON.stringify(originalData);
@@ -41,7 +44,7 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
     const fetchUsers = async () => {
       try {
         const users = await ApiService.getAllUsers();
-        setAllUsers(users.filter(u => u.id !== currentUser.id));
+        setAllUsers(users.filter((u) => u.id !== currentUser.id));
       } catch (err) {
         console.error(err);
       }
@@ -58,15 +61,15 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
   }, [currentUser.id]);
 
   const toggleTagUser = (user) => {
-    if (taggedUsers.some(u => u.id === user.id)) {
-      setTaggedUsers(taggedUsers.filter(u => u.id !== user.id));
+    if (taggedUsers.some((u) => u.id === user.id)) {
+      setTaggedUsers(taggedUsers.filter((u) => u.id !== user.id));
     } else {
       setTaggedUsers([...taggedUsers, user]);
     }
   };
 
   const removeTag = (userId) => {
-    setTaggedUsers(taggedUsers.filter(u => u.id !== userId));
+    setTaggedUsers(taggedUsers.filter((u) => u.id !== userId));
   };
 
   const handleImageUpload = (e) => {
@@ -83,7 +86,7 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
   };
 
   const handleUpdate = async () => {
-    if (!isChanged()) return; 
+    if (!isChanged()) return;
 
     try {
       let image_url = shoutout.image_url || null;
@@ -98,7 +101,7 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
         message,
         category,
         is_public: visibility,
-        tagged_user_ids: taggedUsers.map(u => u.id),
+        tagged_user_ids: taggedUsers.map((u) => u.id),
         image_url,
       };
 
@@ -113,7 +116,9 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
-      <h2 className="text-2xl font-bold mb-4 text-violet-600">Edit Shout-Out</h2>
+      <h2 className="text-2xl font-bold mb-4 text-violet-600">
+        Edit Shout-Out
+      </h2>
 
       <textarea
         className="w-full h-32 p-3 border rounded-lg mb-4 bg-white shadow-sm resize-none"
@@ -125,17 +130,34 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
       <div className="relative mb-4" ref={tagRef}>
         <button
           className="w-full text-left p-3 border rounded-lg bg-white shadow-sm flex flex-wrap gap-1 items-center min-h-[2.5rem]"
-          onClick={(e) => { e.stopPropagation(); setShowTagDropdown(!showTagDropdown); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowTagDropdown(!showTagDropdown);
+          }}
         >
           {taggedUsers.length === 0 ? (
             <span>Tag People</span>
           ) : (
             <>
-              <span className="text-gray-600 font-semibold text-sm mr-1">Tagged:</span>
-              {taggedUsers.map(u => (
-                <span key={u.id} className="flex items-center gap-1 bg-violet-200 text-violet-800 px-2 py-1 rounded-full text-sm">
+              <span className="text-gray-600 font-semibold text-sm mr-1">
+                Tagged:
+              </span>
+              {taggedUsers.map((u) => (
+                <span
+                  key={u.id}
+                  className="flex items-center gap-1 bg-violet-200 text-violet-800 px-2 py-1 rounded-full text-sm"
+                >
                   {u.username}
-                  <button type="button" onClick={(e) => { e.stopPropagation(); removeTag(u.id); }} className="font-bold hover:text-red-600">×</button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeTag(u.id);
+                    }}
+                    className="font-bold hover:text-red-600"
+                  >
+                    ×
+                  </button>
                 </span>
               ))}
             </>
@@ -144,10 +166,14 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
 
         {showTagDropdown && (
           <div className="absolute w-full max-h-60 overflow-y-auto border bg-white rounded-lg shadow-lg z-50 mt-1">
-            {allUsers.map(u => (
+            {allUsers.map((u) => (
               <div
                 key={u.id}
-                className={`p-2 cursor-pointer hover:bg-violet-100 transition-colors ${taggedUsers.some(t => t.id === u.id) ? "bg-violet-200 font-semibold" : ""}`}
+                className={`p-2 cursor-pointer hover:bg-violet-100 transition-colors ${
+                  taggedUsers.some((t) => t.id === u.id)
+                    ? "bg-violet-200 font-semibold"
+                    : ""
+                }`}
                 onClick={() => toggleTagUser(u)}
               >
                 {u.username} | {u.department} | {u.role}
@@ -161,13 +187,28 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
         <label className="cursor-pointer inline-flex items-center gap-2 p-3 border rounded-lg bg-white shadow-sm">
           <ImageIcon size={20} />
           <span>{imagePreview ? "Change Image" : "Upload Image"}</span>
-          <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
         </label>
 
         {imagePreview && (
           <div className="mt-2 flex items-center gap-2 bg-gray-100 p-2 rounded-lg w-max">
-            <img src={imagePreview} alt="Preview" className="w-40 rounded-lg border" />
-            <button type="button" className="text-red-500 font-bold hover:text-red-700" onClick={removeImage}>❌</button>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-40 rounded-lg border"
+            />
+            <button
+              type="button"
+              className="text-red-500 font-bold hover:text-red-700"
+              onClick={removeImage}
+            >
+              ❌
+            </button>
           </div>
         )}
       </div>
@@ -178,7 +219,9 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
-          <option value="" disabled>Select Category</option>
+          <option value="" disabled>
+            Select Category
+          </option>
           <option value="teamwork">Teamwork</option>
           <option value="innovation">Innovation</option>
           <option value="leadership">Leadership</option>
@@ -201,7 +244,12 @@ const EditShoutOut = ({ shoutout, currentUser, onCancel, onUpdated }) => {
       </div>
 
       <div className="flex justify-end gap-3">
-        <button onClick={onCancel} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+        >
+          Cancel
+        </button>
 
         <button
           onClick={handleUpdate}

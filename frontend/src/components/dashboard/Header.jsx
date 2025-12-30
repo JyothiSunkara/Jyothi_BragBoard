@@ -1,4 +1,9 @@
-const Header = ({ user, onLogout, onMenuToggle }) => {
+import React, { useState } from "react";
+import { Pencil } from "lucide-react";
+
+const Header = ({ user, onLogout, onMenuToggle, setActiveView }) => {
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
+
   return (
     <header className="bg-gradient-to-r from-white via-indigo-50 to-purple-50 backdrop-blur-sm shadow-md border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +55,7 @@ const Header = ({ user, onLogout, onMenuToggle }) => {
           </div>
 
           {/* RIGHT SECTION: User Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 relative">
             {/* Department (hide on mobile) */}
             <div className="hidden md:flex items-center space-x-2">
               <span className="text-sm text-gray-600">Department:</span>
@@ -74,7 +79,10 @@ const Header = ({ user, onLogout, onMenuToggle }) => {
 
             {/* Avatar + Username */}
             <div className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+              <div
+                className="w-9 h-9 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm cursor-pointer"
+                onClick={() => setShowProfilePopup(!showProfilePopup)}
+              >
                 <span className="text-white text-sm font-bold">
                   {user?.username?.charAt(0)?.toUpperCase() || "U"}
                 </span>
@@ -86,10 +94,10 @@ const Header = ({ user, onLogout, onMenuToggle }) => {
               </span>
             </div>
 
-            {/* Logout */}
+            {/* Desktop Logout (hide on mobile) */}
             <button
               onClick={onLogout}
-              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center space-x-2"
+              className="hidden md:flex bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg items-center space-x-2"
             >
               <svg
                 className="w-4 h-4"
@@ -107,6 +115,54 @@ const Header = ({ user, onLogout, onMenuToggle }) => {
               </svg>
               <span className="hidden sm:inline">Sign Out</span>
             </button>
+
+            {/* Mobile Popup */}
+            {showProfilePopup && (
+              <div className="absolute right-0 top-14 w-56 bg-gradient-to-r from-white via-indigo-50 to-purple-50 shadow-lg rounded-xl p-4 z-50 md:hidden">
+                <div className="flex flex-col space-y-2">
+                  {/* Username + Edit */}
+                  <div className="flex items-center justify-between">
+                    <div className="font-semibold text-gray-800">
+                      {user?.username || "User"}
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setShowProfilePopup(false);
+                        setActiveView("settings");
+                      }}
+                      className="p-1 rounded-md hover:bg-gray-100 transition"
+                      title="Edit profile"
+                    >
+                      <Pencil size={16} className="text-gray-600" />
+                    </button>
+                  </div>
+
+                  {/* Email */}
+                  <div className="text-sm text-gray-600 break-all">
+                    Email: {user?.email || "email@example.com"}
+                  </div>
+
+                  {/* Department */}
+                  <div className="text-sm text-gray-600">
+                    Department: {user?.department || "N/A"}
+                  </div>
+
+                  {/* Role */}
+                  <div className="text-sm text-gray-600">
+                    Role: {user?.role === "admin" ? "👑 Admin" : "👤 Employee"}
+                  </div>
+
+                  {/* Logout */}
+                  <button
+                    onClick={onLogout}
+                    className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white py-2 rounded-lg transition-all"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

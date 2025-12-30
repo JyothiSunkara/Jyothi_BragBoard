@@ -219,7 +219,7 @@ export default function CommentSection({
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Write a comment..."
-          className="flex-1 border rounded-xl px-3 py-2 text-sm"
+          className="flex-1 rounded-xl px-3 py-2 text-sm"
         />
         <button
           onClick={postComment}

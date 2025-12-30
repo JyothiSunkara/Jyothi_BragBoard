@@ -306,12 +306,33 @@ export default function ShoutOutFeed({
             />
 
             {/* Date Filter */}
-            <input
+            {/* <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               className="border rounded-xl px-4 py-2 text-sm focus:outline-none shadow-sm hover:shadow-md transition-all"
-            />
+            /> */}
+
+            <div className="relative">
+              {!date && (
+                <span
+                  className="absolute left-4 top-1/2 -translate-y-1/2
+                 text-gray-400 text-sm pointer-events-none
+                 md:hidden"
+                >
+                  dd / mm / yyyy
+                </span>
+              )}
+
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="border rounded-xl px-4 py-2 text-sm 
+               focus:outline-none shadow-sm hover:shadow-md 
+               transition-all w-full"
+              />
+            </div>
 
             {/* Clear Filters */}
             <motion.button
