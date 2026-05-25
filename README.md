@@ -133,11 +133,6 @@ https://bragboard-frontend.vercel.app/
 <p align="center">
   <img src="./screenshots/mobile-feed.png" width="250" alt="Mobile Feed"/>
   <img src="./screenshots/mobile-sidebar.png" width="250" alt="Mobile Sidebar"/>
-</p>
-
-<br/>
-
-<p align="center">
   <img src="./screenshots/mobile-reactions.png" width="250" alt="Mobile Reactions Popup"/>
 </p>
 
